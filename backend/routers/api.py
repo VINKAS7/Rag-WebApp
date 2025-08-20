@@ -2,10 +2,11 @@ from fastapi import APIRouter, status, HTTPException, UploadFile, File
 import os
 import shutil
 from utils.ollama_utils import models_avaliable
+from utils.pipeline import run_pipeline
 
 router = APIRouter(
     prefix="/api",
-    tags=["api"]
+    tags=["apis"]
 )
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../collections"))
@@ -44,7 +45,23 @@ def create_collection(collection_name: str, files: list[UploadFile] = File(...))
     saved_files = []
     for file in files:
         file_path = os.path.join(target_dir, file.filename)
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-        saved_files.append(file.filename)
+        try:
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+            saved_files.append(file.filename)
+        finally:
+            file.file.close()
+    try:
+        run_pipeline(
+            input_dir=target_dir, 
+            output_dir=os.path.join(BASE_DIR, collection_name),
+            collection_name=collection_name,
+            log_file_path=os.path.join(BASE_DIR, collection_name, f"{collection_name}_pipeline.log")
+        )
+        shutil.rmtree(target_dir)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"An error occurred while processing the files: {str(e)}"
+        )
     return {"status": "success", "collection": collection_name, "files": saved_files}

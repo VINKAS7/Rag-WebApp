@@ -13,9 +13,9 @@ from unstructured_ingest.processes.chunker import ChunkerConfig
 from unstructured_ingest.processes.embedder import EmbedderConfig
 from unstructured_ingest.pipeline.pipeline import Pipeline
 
-def run_pipeline(input_dir, output_dir, collection_name):
+def run_pipeline(input_dir, output_dir, collection_name, log_file_path):
     Pipeline.from_configs(
-        context=ProcessorConfig(),
+        context=ProcessorConfig(log_file=log_file_path),
         indexer_config=LocalIndexerConfig(
             input_path=input_dir,
             recursive=True,
@@ -42,5 +42,3 @@ def run_pipeline(input_dir, output_dir, collection_name):
             path=output_dir+"/chromadb",
         ),
     ).run()
-
-    print("Ingestion pipeline complete! Chunks are embedded locally and saved to ChromaDB. 🚀")
