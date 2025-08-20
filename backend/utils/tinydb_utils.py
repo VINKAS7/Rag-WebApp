@@ -30,6 +30,7 @@ class TinyDB_Utils_Global:
             "modelName": modelName,
             "collectionName": collectionName
         }
+        self.db.insert(history)
     
     def get_history(self):
         return self.db.all()
