@@ -34,6 +34,7 @@ def run_pipeline(input_dir, output_dir, collection_name, log_file_path):
             embedding_provider="huggingface",
             model_name="BAAI/bge-large-en-v1.5",
             model_kwargs={"device": "cpu"},
+            normalize_embeddings=True
         ),
         uploader_config=ChromaUploaderConfig(
             collection_name=collection_name,
