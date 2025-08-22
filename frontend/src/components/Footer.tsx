@@ -19,16 +19,21 @@ function Footer(){
         getCollections();
     }, []);
     return(
-        <div className="flex">
+        <div className="flex justify-center align-center py-10 pt-5 gap-2">
             <div className="relative inline-block">
                 <button
                     onClick={() => setmodelListOpen(!modelListOpen)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                    className="bg-blue-500 text-white rounded p-2"
                 >
-                    {provider}
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
-                    </svg>
+                    <p className="flex items-center gap-1 cursor-pointer">
+                        <span>{provider}</span>  
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+                            </svg>
+                        </span>
+                    </p>
+                    
                 </button>
                 {modelListOpen && (
                     <ul className="absolute bottom-full mb-2 w-40 bg-white shadow-lg rounded-lg border">
@@ -44,7 +49,7 @@ function Footer(){
                     onClick={() =>{
                         setCollectionOpen(!collectionOpen);
                     } }
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                    className="bg-green-500 text-white rounded p-2 cursor-pointer"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
@@ -63,9 +68,21 @@ function Footer(){
                     </ul>
                 )}
             </div>
-            <input />
-            <button></button>
-            <button></button>
+            <input
+                type="text"
+                placeholder="Enter Prompt"
+                className="w-[40%] p-2 rounded border border-gray-400 focus:outline-none focus:ring-0"
+            />
+            <button className="bg-blue-500 rounded p-2 text-white cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+            </button>
+            <button className="bg-green-500 rounded p-2 text-white cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+                </svg>
+            </button>
         </div>
     )
 }

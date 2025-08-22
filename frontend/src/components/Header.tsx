@@ -6,7 +6,7 @@ function Header() {
             <span className="block group-hover:hidden bg-gradient-to-r from-blue-500 to-cyan-400 bg-clip-text text-transparent">
                 Rag
             </span>
-            <span className="hidden group-hover:block text-gray-700">[100]</span>
+            <span className="hidden group-hover:block text-white">[100]</span>
         </span>
 
       {/* Second word */}
@@ -14,7 +14,7 @@ function Header() {
         <span className="block group-hover:hidden bg-gradient-to-r from-green-500 to-emerald-400 bg-clip-text text-transparent">
             WebApp
         </span>
-        <span className="hidden group-hover:block text-gray-700">[200]</span>
+        <span className="hidden group-hover:block text-white">[200]</span>
         </span>
     </div>
     );

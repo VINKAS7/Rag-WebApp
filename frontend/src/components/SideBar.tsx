@@ -78,7 +78,7 @@ function SideBar() {
             {isOpen && <h2 className="text-lg font-semibold">History</h2>}
             <button
             onClick={() => setIsOpen(!isOpen)}
-            className="p-2 hover:bg-gray-800 rounded"
+            className="p-2 hover:bg-gray-800 rounded cursor-pointer"
             >
             {isOpen ? CloseIcon : MenuIcon}
             </button>
@@ -88,7 +88,7 @@ function SideBar() {
         <div className="p-2 border-b border-gray-800">
             <button
             onClick={handleNewChat}
-            className="flex items-center gap-2 w-full px-3 py-2 bg-green-600 hover:bg-green-500 rounded text-sm font-medium"
+            className="flex items-center gap-2 w-full px-3 py-2 bg-green-600 hover:bg-green-500 rounded text-sm font-medium cursor-pointer"
             >
             {PlusIcon}
             {isOpen && "New Chat"}
@@ -103,7 +103,7 @@ function SideBar() {
             conversations.map((conv) => (
                 <button
                     key={conv.id}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-left text-sm hover:bg-gray-800"
+                    className="flex items-center gap-2 w-full px-3 py-2 text-left text-sm hover:bg-gray-800 cursor-pointer"
                 >
                     {isOpen ? conv.name : conv.name.charAt(0).toUpperCase()}
                 </button>
