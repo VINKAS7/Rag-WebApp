@@ -5,7 +5,7 @@ import SideBar from "../components/SideBar";
 
 function Home(){
     return(
-        <div className="flex">
+        <div className="flex w-full">
             <SideBar />
             <div className="flex flex-col min-h-screen">
                 <Header />
