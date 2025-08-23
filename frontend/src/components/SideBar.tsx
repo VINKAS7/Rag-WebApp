@@ -1,20 +1,21 @@
 import { useEffect, useState } from "react";
-
+import { useNavigate } from "react-router-dom";
 interface Conversation {
-    id: string;
-    name: string;
+    conversation_summary: string,
+    conversation_id: string
 }
 
 function SideBar() {
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [isOpen, setIsOpen] = useState(true);
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchHistory = async () => {
         setLoading(true);
         try {
-            const res = await fetch("/get_history");
+            const res = await fetch("http://localhost:3000/conversation/get_history");
             if (!res.ok) throw new Error("Failed to fetch history");
             const data = await res.json();
             setConversations(data);
@@ -28,7 +29,7 @@ function SideBar() {
     }, []);
 
     const handleNewChat = () => {
-        console.log("Create new chat");
+        navigate("/");
     };
 
     // SVG icons
@@ -102,10 +103,13 @@ function SideBar() {
             ) : conversations.length > 0 ? (
             conversations.map((conv) => (
                 <button
-                    key={conv.id}
+                    key={conv.conversation_id}
                     className="flex items-center gap-2 w-full px-3 py-2 text-left text-sm hover:bg-gray-800 cursor-pointer"
+                    onClick={() => {
+                        navigate("/conversation/"+conv.conversation_id);
+                    }}
                 >
-                    {isOpen ? conv.name : conv.name.charAt(0).toUpperCase()}
+                    {isOpen ? conv.conversation_summary : conv.conversation_summary.charAt(0).toUpperCase()}
                 </button>
                 ))
             ) : (

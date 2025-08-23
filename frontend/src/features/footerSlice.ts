@@ -4,6 +4,7 @@ const initialState = {
     provider: "Select Provider",
     selectedCollection: "",
     modelName: "",
+    conversationId: null
 };
 
 export const footerSlice = createSlice({
@@ -19,8 +20,11 @@ export const footerSlice = createSlice({
         setModelName: (state, action) => {
             state.modelName = action.payload;
         },
+        setConversationId: (state, action) => {
+            state.conversationId = action.payload;
+        }
     }
 });
 
-export const {setProvider, setSelectedCollection, setModelName} = footerSlice.actions;
+export const {setProvider, setSelectedCollection, setModelName, setConversationId} = footerSlice.actions;
 export default footerSlice.reducer;

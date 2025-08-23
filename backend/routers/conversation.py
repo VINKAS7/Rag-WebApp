@@ -18,15 +18,16 @@ class UserPrompt(BaseModel):
 
 class GetConversation(BaseModel):
     conversation_id: str
-    
 
 @router.post("/get_response")
 def get_response(prompt: UserPrompt):
-    db = TinyDB_Utils(os.path.join("../collections",prompt.collectionName,"db",f"{prompt.conversation_id}.json"))
+    global_db = TinyDB_Utils_Global()
+    global_db.save_history(summary="testing", conversation_id=prompt.conversation_id, provider=prompt.provider, modelName=prompt.modelName, collectionName=prompt.collectionName)
+    db = TinyDB_Utils(os.path.join("./collections",prompt.collectionName,"db",f"{prompt.conversation_id}.json"))
     if prompt.provider == "Ollama":
         try:
             response = ollama_response(prompt.modelName, prompt.prompt).strip() 
-            db.save_conversation(prompt.prompt, response, prompt.conversation_id)
+            db.save_conversation(prompt.prompt, response)
             return {"status":"sucess", "model_response": response}
         except:
             return {"status":"failed"}
@@ -52,11 +53,12 @@ def get_response(prompt: UserPrompt):
         except:
             return {"status":"failed"}
 
-@router.post("/get_conversation/{uid}")
+@router.get("/get_conversation/{uid}")
 def get_conversation(uid: str):
     global_db = TinyDB_Utils_Global()
-    conversation_info = global_db.get_uid_history(uid.conversation_id)
-    db = TinyDB_Utils(os.path.join("../collections/",conversation_info.collectionName,f"{conversation_info.collection_id}.json"))
+    conversation_info = global_db.get_uid_history(uid)[0]
+    print(conversation_info["collectionName"])
+    db = TinyDB_Utils(os.path.join("./collections/",conversation_info["collectionName"],f"{conversation_info["conversation_id"]}.json"))
     try:
         collection_conversation = db.get_collection_conversation_history()
         return {"status":"success","collection_conversation":collection_conversation}
