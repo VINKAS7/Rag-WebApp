@@ -5,6 +5,7 @@ import type { RootState } from "../app/store";
 import { useNavigate } from "react-router-dom";
 import {v4 as uuidv4} from "uuid"
 import { setChat } from "../features/chatSlice";
+import { setNewConversation } from "../features/chatSlice";
 
 function Footer(){
     const [modelListOpen, setmodelListOpen] = useState(false);
@@ -28,6 +29,7 @@ function Footer(){
         const cid = uuidv4();
         if(!conversationId){
             dispatch(setConversationId(cid));
+            dispatch(setNewConversation(true));
             navigate("/conversation/"+cid, {
                 state: {
                     "user": userPrompt
@@ -35,17 +37,6 @@ function Footer(){
             });
         }
         dispatch(setChat({"user": userPrompt}));
-        const response = await fetch("http://localhost:3000/conversation/get_response",{
-            method: "POST",
-            body: JSON.stringify({
-                "provider": useSelector((state: RootState) => state.footer.provider),
-                "modelName": useSelector((state: RootState) => state.footer.modelName),
-                "user": userPrompt,
-                "conversation_id": useSelector((state: RootState) => state.footer.conversationId),
-                "collectionName": useSelector((state: RootState) => state.footer.selectedCollection)
-            })
-        });
-        dispatch(setChat({"model": await response.json()}));
         setUserPrompt("");
     }
     return(

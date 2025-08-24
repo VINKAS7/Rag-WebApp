@@ -1,9 +1,11 @@
-import {configureStore} from "@reduxjs/toolkit"
-import footerReducer from "../features/footerSlice"
+import {configureStore} from "@reduxjs/toolkit";
+import footerReducer from "../features/footerSlice";
+import chatReducer from "../features/chatSlice";
 
 export const store = configureStore({
     reducer: {
-        footer: footerReducer
+        footer: footerReducer,
+        chat: chatReducer
     }
 });
 

@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setConversationId } from "../features/footerSlice";
+import { setNewConversation } from "../features/chatSlice";
 interface Conversation {
     conversation_summary: string,
     conversation_id: string
@@ -10,6 +13,7 @@ function SideBar() {
     const [isOpen, setIsOpen] = useState(true);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     useEffect(() => {
         const fetchHistory = async () => {
@@ -106,6 +110,8 @@ function SideBar() {
                     key={conv.conversation_id}
                     className="flex items-center gap-2 w-full px-3 py-2 text-left text-sm hover:bg-gray-800 cursor-pointer"
                     onClick={() => {
+                        dispatch(setConversationId(conv.conversation_id));
+                        dispatch(setNewConversation(false));
                         navigate("/conversation/"+conv.conversation_id);
                     }}
                 >

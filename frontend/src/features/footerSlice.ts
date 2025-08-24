@@ -2,8 +2,8 @@ import {createSlice} from "@reduxjs/toolkit";
 
 const initialState = {
     provider: "Select Provider",
-    selectedCollection: "",
-    modelName: "",
+    selectedCollection: null,
+    modelName: null,
     conversationId: null
 };
 
