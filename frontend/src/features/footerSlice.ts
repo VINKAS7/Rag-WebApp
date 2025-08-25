@@ -1,9 +1,8 @@
 import {createSlice} from "@reduxjs/toolkit";
 
 const initialState = {
-    provider: "Select Provider",
-    selectedCollection: null,
-    modelName: null,
+    selectedCollection: "Select Collection",
+    modelName: "Select Model",
     conversationId: null
 };
 
@@ -11,9 +10,6 @@ export const footerSlice = createSlice({
     name:"footer",
     initialState,
     reducers:{
-        setProvider: (state, action) => {
-            state.provider = action.payload;
-        },
         setSelectedCollection: (state,action) => {
             state.selectedCollection = action.payload;
         },
@@ -26,5 +22,5 @@ export const footerSlice = createSlice({
     }
 });
 
-export const {setProvider, setSelectedCollection, setModelName, setConversationId} = footerSlice.actions;
+export const { setSelectedCollection, setModelName, setConversationId} = footerSlice.actions;
 export default footerSlice.reducer;

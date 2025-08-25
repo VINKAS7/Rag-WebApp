@@ -9,7 +9,7 @@ router = APIRouter(
     tags=["apis"]
 )
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "./collections"))
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../collections"))
 
 @router.get("/get_ollama_models")
 def get_ollama_models():

@@ -20,6 +20,12 @@ export const chatSlice = createSlice({
     name: "chat",
     initialState,
     reducers: {
+        updateLastModelMessage: (state, action: PayloadAction<{ model: string }>) => {
+            const lastMessage = state.chats[state.chats.length - 1];
+            if (lastMessage && !lastMessage.user) {
+                lastMessage.model = action.payload.model;
+            }
+        },
         setChat: (state, action: PayloadAction<ChatMessage>) => {
             state.chats.push(action.payload);
         },
@@ -32,5 +38,5 @@ export const chatSlice = createSlice({
     }
 });
 
-export const {setChat, setHistory, setNewConversation} = chatSlice.actions;
+export const {setChat, setHistory, setNewConversation, updateLastModelMessage} = chatSlice.actions;
 export default chatSlice.reducer;

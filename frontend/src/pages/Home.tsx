@@ -1,6 +1,6 @@
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import Chat from "../components/Chat";
+import SimpleChat from "../components/SimpleChat";
 import SideBar from "../components/SideBar";
 
 function Home() {
@@ -9,7 +9,7 @@ function Home() {
             <SideBar />
             <div className="flex flex-col flex-1">
                 <Header />
-                <Chat />
+                <SimpleChat />
                 <Footer />
             </div>
         </div>
