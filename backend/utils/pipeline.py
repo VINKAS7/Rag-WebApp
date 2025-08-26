@@ -23,12 +23,16 @@ def run_pipeline(input_dir, output_dir, collection_name, log_file_path):
         ),
         downloader_config=LocalDownloaderConfig(),
         source_connection_config=LocalConnectionConfig(),
-        partitioner_config=PartitionerConfig(),
+        partitioner_config=PartitionerConfig(
+            strategy="hi_res",
+            encoding="utf-8",
+            ocr_languages=["eng"],
+            pdf_infer_table_structure=True
+            ),
         chunker_config=ChunkerConfig(
             chunking_strategy="by_title",
-            chunk_max_characters=500,
-            chunk_multipage_selections=True,
-            chunk_overlap=100
+            chunk_max_characters=512,
+            chunk_overlap=50
         ),
         embedder_config=EmbedderConfig(
             embedding_provider="huggingface",
@@ -38,6 +42,7 @@ def run_pipeline(input_dir, output_dir, collection_name, log_file_path):
         ),
         uploader_config=ChromaUploaderConfig(
             collection_name=collection_name,
+            batch_size=64
         ),
         destination_connection_config=ChromaConnectionConfig(
             path=output_dir+"/chromadb",
