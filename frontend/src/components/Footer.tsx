@@ -49,6 +49,11 @@ function Footer(){
             dispatch(setConversationId(newCid));
             dispatch(setNewConversation(true));
             dispatch(setHistory([]));
+            fetch("http://localhost:3000/conversation/get_history")
+            .then(res => res.json())
+            .then(history => {
+                dispatch(setHistory(history));
+            });
             navigate(`/conversation/${newCid}`, {
                 state: { "user": userPrompt }
             });
@@ -63,7 +68,7 @@ function Footer(){
             <div className="relative inline-block">
                 <button
                     onClick={() => setmodelListOpen(!modelListOpen)}
-                    className="bg-blue-500 text-white rounded p-2 min-w-[130px] truncate cursor-pointer"
+                    className="bg-blue-500 text-white rounded p-2 truncate cursor-pointer"
                 >
                     <div className="flex gap-1">
                         {modelName}
@@ -91,7 +96,7 @@ function Footer(){
             <div className="relative inline-block">
                 <button
                     onClick={() => setCollectionOpen(!collectionOpen)}
-                    className="bg-green-500 text-white rounded p-2 min-w-[150px] truncate cursor-pointer"
+                    className="bg-green-500 text-white rounded p-2 truncate cursor-pointer"
                 >
                     <div className="flex gap-1">
                         {selectedCollection}

@@ -18,6 +18,7 @@ class TinyDB_Utils:
         else:
             raise ValueError("Either user or model must be provided.")
         self.db.insert(message)
+
     def get_collection_conversation_history(self):
         return self.db.all()
 
@@ -49,6 +50,36 @@ class TinyDB_Utils_Global:
             for r in results
         ]
 
+    def delete_conversation(self, uid):
+        self.db.remove(self.conversation.conversation_id == uid)
+
     
     def get_uid_history(self, uid):
         return self.db.search(self.conversation.conversation_id == uid)
+
+
+class Tiny_DB_Global_Prompt:
+    def __init__(self, db_path="./db/prompt_templates.json"):
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+        self.db = TinyDB(db_path)
+        self.conversation = Query()
+
+    def save_prompt_template(self, template_name:str, prompt_tempate:str):
+        template = {
+            "name": template_name,
+            "prompt_template": prompt_tempate
+        }
+        self.db.insert(template)
+
+    def get_name_template(self, name):
+        return self.db.search(self.conversation.name == name)
+
+    def get_all_templates(self):
+        results = self.db.all()
+        return [
+            {
+                "name": r["name"],
+                "prompt_template": r["prompt_template"],
+            }
+            for r in results
+        ]

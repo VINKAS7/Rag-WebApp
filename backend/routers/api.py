@@ -19,23 +19,6 @@ def get_ollama_models():
 def get_collections():
     return os.listdir(BASE_DIR)
 
-@router.delete("/delete_collection/{collection_name}")
-def delete_collection(collection_name: str):
-    target_path = os.path.abspath(os.path.join(BASE_DIR, collection_name))
-    if not target_path.startswith(BASE_DIR):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Deletion outside collections folder is not allowed"
-        )
-    if os.path.exists(target_path) and os.path.isdir(target_path):
-        shutil.rmtree(target_path)
-        return {"status": "success", "message": f"Deleted folder: {collection_name}"}
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Folder not found"
-        )
-
 @router.post("/create_collection/{collection_name}")
 def create_collection(collection_name: str, files: list[UploadFile] = File(...)):
     target_dir = os.path.abspath(os.path.join(BASE_DIR, collection_name, "files"))

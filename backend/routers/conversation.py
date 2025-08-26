@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from utils.ollama_utils import ollama_response
-from utils.tinydb_utils import TinyDB_Utils, TinyDB_Utils_Global
+from utils.tinydb_utils import TinyDB_Utils, TinyDB_Utils_Global, Tiny_DB_Global_Prompt
 import os
 from utils.rag_utils import query_chroma
 
@@ -9,6 +9,22 @@ router = APIRouter(
     prefix="/conversation",
     tags=["conversations"]
 )
+
+# keep a global default template
+DEFAULT_TEMPLATE = """Use the following pieces of context to answer the user's question.
+If you don't know the answer, just say that you don't know, don't try to make up an answer.
+Context:
+{context}
+---
+Question: {question}
+"""
+
+# you can store per-conversation templates in TinyDB_Global or just keep one global
+prompt_template_store = {"template": DEFAULT_TEMPLATE}
+
+class PromptTemplate(BaseModel):
+    template_name: str
+    template: str
 
 class UserPrompt(BaseModel):
     modelName: str
@@ -19,17 +35,16 @@ class UserPrompt(BaseModel):
 class GetConversation(BaseModel):
     conversation_id: str
 
+
 def generate_rag_prompt(context: str, question: str) -> str:
-    """Generates a prompt with retrieved context for the LLM."""
+    """Generates a prompt using stored template."""
+    template = prompt_template_store.get("template", DEFAULT_TEMPLATE)
     if not context:
-        return question
-    return f"""Use the following pieces of context to answer the user's question.
-        If you don't know the answer, just say that you don't know, don't try to make up an answer.
-        Context:
-        {context}
-        ---
-        Question: {question}
-        """
+        context = ""
+    try:
+        return template.format(context=context.strip(), question=question.strip())
+    except KeyError as e:
+        return DEFAULT_TEMPLATE.format(context=context.strip(), question=question.strip())
 
 @router.post("/get_response")
 def get_response(prompt: UserPrompt):
@@ -85,3 +100,61 @@ def get_conversation(uid: str):
 def get_history():
     global_db = TinyDB_Utils_Global()
     return global_db.get_history()
+
+@router.post("/new_prompt_template")
+def new_prompt_template(template: PromptTemplate):
+    """Update global/custom RAG prompt template"""
+    if "{context" not in template.template or "{question" not in template.template:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Template must include {context} and {question}"
+        )
+    prompt_template_store["template"] = template.template
+    global_db_prompt = Tiny_DB_Global_Prompt()
+    global_db_prompt.save_prompt_template(template.template_name, template.template)
+    return {"status": "success", "template": template.template}
+
+@router.get("/get_prompt_template/{template_name}")
+def get_prompt_template(template_name: str):
+    global_db_prompt = Tiny_DB_Global_Prompt()
+    return {"status": "success", "template":global_db_prompt.get_name_template(template_name)}
+
+@router.get("/get_all_prompt_templates")
+def get_all_prompt_templates():
+    global_db_prompt = Tiny_DB_Global_Prompt()
+    return {"status":"success", "templates":global_db_prompt.get_all_templates()}
+
+@router.delete("/delete_conversation/{uid}")
+def delete_conversation(uid: str):
+    global_db = TinyDB_Utils_Global()
+    try:
+        conversation_info = global_db.get_uid_history(uid)
+        if not conversation_info:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Conversation not found"
+            )
+        conversation_info = conversation_info[0]
+        deleted = global_db.delete_conversation(uid)
+        if deleted:
+            db_path = os.path.join(
+                "./collections",
+                conversation_info["collectionName"],
+                "db",
+                f"{conversation_info['conversation_id']}.json"
+            )
+            if os.path.exists(db_path):
+                os.remove(db_path)
+            return {"status": "success"}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Conversation not found"
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete conversation: {str(e)}"
+        )

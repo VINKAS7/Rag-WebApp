@@ -47,7 +47,7 @@ function Chat() {
     }, [lastMessage, modelName, selectedCollection, conversationIdFromUrl, dispatch]);
 
     return (
-        <div className="flex-1 p-4 flex flex-col space-y-3 overflow-y-auto">
+        <div className="p-4 flex flex-col space-y-3">
             {conversation.map((msg, idx) => (
                 <div
                     key={idx}
