@@ -20,7 +20,7 @@ const CloseIcon = (
 function dedupeByName(items: PromptTemplate[]): PromptTemplate[] {
     const map = new Map<string, PromptTemplate>();
     for (const t of items) {
-        map.set(t.name, t); // last one wins
+        map.set(t.name, t);
     }
     return Array.from(map.values());
 }
@@ -42,7 +42,7 @@ export function PromptTemplateModal({ isOpen, onClose }: PromptTemplateModalProp
                 setActiveMode(data.mode === 'custom' ? 'custom' : 'default');
             }
         } catch (e) {
-            // ignore
+            console.error(e);
         }
     };
 
@@ -97,7 +97,6 @@ export function PromptTemplateModal({ isOpen, onClose }: PromptTemplateModalProp
         const selected = templates.find(t => t.name === name);
         if (selected) {
             setPromptContent(selected.prompt_template);
-            // Auto-apply selected template so it becomes active immediately
             await applyTemplate(name, selected.prompt_template);
         }
     };

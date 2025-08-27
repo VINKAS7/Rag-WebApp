@@ -38,23 +38,18 @@ function SideBar() {
 
     useEffect(() => {
         fetchHistory();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Refresh history when active conversation id changes (e.g., after navigate)
     useEffect(() => {
         if (activeConversationId) {
             fetchHistory();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeConversationId]);
 
-    // Refresh history when a model message arrives (first backend response persists new conversation)
     useEffect(() => {
         if (lastMessage && lastMessage.model) {
             fetchHistory();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [lastMessage?.model]);
 
     const handleNewChat = () => {
@@ -98,10 +93,8 @@ function SideBar() {
             });
             if (!res.ok) throw new Error("Failed to delete conversation");
 
-            // Optimistically update UI
             setConversations(prev => prev.filter(c => c.conversation_id !== convId));
 
-            // If currently viewing the deleted conversation, reset UI and go Home
             if (activeConversationId === convId) {
                 dispatch(setConversationId(null));
                 dispatch(setHistory([]));
@@ -110,7 +103,6 @@ function SideBar() {
                 navigate("/");
             }
 
-            // Sync with backend to be sure
             await fetchHistory();
         } catch (err) {
             console.error("Error deleting conversation:", err);
@@ -154,7 +146,7 @@ function SideBar() {
                 </div>
 
                 {isOpen && (
-                    <div className="flex-1 overflow-y-auto p-2 space-y-1"> {/* Added padding and space-y for gaps */}
+                    <div className="flex-1 overflow-y-auto p-2 space-y-1"> 
                         {loading ? (
                             <div className="p-4 text-sm text-gray-400">Loading...</div>
                         ) : conversations.length > 0 ? (

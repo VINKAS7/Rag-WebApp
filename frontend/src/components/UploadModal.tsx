@@ -7,7 +7,7 @@ function UploadModal({
 }: {
     isOpen: boolean;
     onClose: () => void;
-    onCollectionCreated: (name: string) => void; // ⬅️ pass back new collection name
+    onCollectionCreated: (name: string) => void;
 }) {
     const [files, setFiles] = useState<File[]>([]);
     const [collectionName, setCollectionName] = useState("");
@@ -48,10 +48,8 @@ function UploadModal({
             const data = await response.json();
             alert(`Collection '${data.collection}' created successfully with files: ${data.files.join(", ")}`);
 
-            // ✅ Refresh collection list + auto-select new collection
             onCollectionCreated(data.collection);
 
-            // reset
             setFiles([]);
             setCollectionName("");
             onClose();

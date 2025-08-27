@@ -20,7 +20,6 @@ function Chat() {
         return v === "select model" || v === "select collection";
     }
 
-    // Hydrate conversation when directly landing on /conversation/{id}
     useEffect(() => {
         const bootstrapConversation = async () => {
             if (!conversationIdFromUrl || conversation.length > 0) return;
@@ -38,12 +37,11 @@ function Chat() {
                     if (data.collectionName) dispatch(setSelectedCollection(data.collectionName));
                     dispatch(setConversationId(conversationIdFromUrl));
                 }
-            } catch {
-                // ignore bootstrap errors
+            } catch (e) {
+                console.error(e);
             }
         };
         bootstrapConversation();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [conversationIdFromUrl]);
 
     useEffect(() => {

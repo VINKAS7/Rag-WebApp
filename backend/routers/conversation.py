@@ -10,7 +10,6 @@ router = APIRouter(
     tags=["conversations"]
 )
 
-# keep a global default template
 DEFAULT_TEMPLATE = """Use the following pieces of context to answer the user's question.
 If you don't know the answer, just say that you don't know, don't try to make up an answer.
 Context:
@@ -19,7 +18,6 @@ Context:
 Question: {question}
 """
 
-# you can store per-conversation templates in TinyDB_Global or just keep one global
 prompt_template_store = {"template": DEFAULT_TEMPLATE}
 
 class PromptTemplate(BaseModel):
@@ -159,7 +157,6 @@ def delete_conversation(uid: str):
                 "db",
                 f"{conversation_info['conversation_id']}.json"
             )
-            print(db_path)
             if os.path.exists(db_path):
                 os.remove(db_path)
             return {"status": "success"}
