@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File
 import os
 import shutil
 from utils.ollama_utils import models_avaliable
@@ -39,7 +39,6 @@ def create_collection(collection_name: str, files: list[UploadFile] = File(...))
             input_dir=target_dir, 
             output_dir=os.path.join(BASE_DIR, collection_name),
             collection_name=collection_name,
-            log_file_path=os.path.join(BASE_DIR, collection_name, f"{collection_name}_pipeline.log")
         )
         shutil.rmtree(target_dir)
     except Exception as e:

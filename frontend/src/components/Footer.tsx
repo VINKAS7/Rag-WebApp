@@ -3,68 +3,72 @@ import { useDispatch, useSelector } from "react-redux";
 import { setSelectedCollection, setModelName, setConversationId } from "../features/footerSlice";
 import type { RootState } from "../app/store";
 import { useNavigate } from "react-router-dom";
-import {v4 as uuidv4} from "uuid"
+import { v4 as uuidv4 } from "uuid";
 import { setChat, setNewConversation, setHistory } from "../features/chatSlice";
 import UploadModal from "./UploadModal";
 
-function Footer(){
+function Footer() {
     const [modelListOpen, setmodelListOpen] = useState(false);
     const [collectionOpen, setCollectionOpen] = useState(false);
-    const [collections, setCollections] = useState([]);
-    const [models, setModels] = useState([]);
+    const [collections, setCollections] = useState<string[]>([]);
+    const [models, setModels] = useState<string[]>([]);
     const [userPrompt, setUserPrompt] = useState("");
     const [open, setOpen] = useState(false);
+
     const dispatch = useDispatch();
     const selectedCollection = useSelector((state: RootState) => state.footer.selectedCollection);
     const navigate = useNavigate();
     const conversationId = useSelector((state: RootState) => state.footer.conversationId);
     const modelName = useSelector((state: RootState) => state.footer.modelName);
 
+    const getCollections = async () => {
+        const res = await fetch("http://localhost:3000/api/get_collections");
+        const c = await res.json();
+        setCollections(c);
+    };
+
+    const getModels = async () => {
+        const res = await fetch("http://localhost:3000/api/get_ollama_models");
+        const m = await res.json();
+        setModels(m);
+        if (!modelName && m.length > 0) {
+            dispatch(setModelName(m[0]));
+        }
+    };
+
     useEffect(() => {
-        const getCollections = async () => {
-            const res = await fetch("http://localhost:3000/api/get_collections");
-            const c = await res.json();
-            setCollections(c);
-        }
-        const getModels = async () => {
-            const res = await fetch("http://localhost:3000/api/get_ollama_models");
-            const m = await res.json();
-            setModels(m);
-            if (!modelName && m.length > 0) {
-                dispatch(setModelName(m[0]));
-            }
-        }
         getCollections();
         getModels();
     }, [dispatch, modelName]);
 
-    async function checkConversationId(){
+    async function checkConversationId() {
         if (!userPrompt.trim() || !modelName || !selectedCollection) {
             alert("Please select a model, a collection, and enter a prompt.");
             return;
         }
 
-        if(!conversationId){
+        if (!conversationId) {
             const newCid = uuidv4();
             dispatch(setConversationId(newCid));
             dispatch(setNewConversation(true));
             dispatch(setHistory([]));
             fetch("http://localhost:3000/conversation/get_history")
-            .then(res => res.json())
-            .then(history => {
-                dispatch(setHistory(history));
-            });
+                .then(res => res.json())
+                .then(history => {
+                    dispatch(setHistory(history));
+                });
             navigate(`/conversation/${newCid}`, {
                 state: { "user": userPrompt }
             });
         } else {
-            dispatch(setChat({"user": userPrompt}));
+            dispatch(setChat({ "user": userPrompt }));
         }
         setUserPrompt("");
     }
-    
-    return(
+
+    return (
         <div className="flex justify-center items-center py-4 px-4 gap-2 border-t">
+            {/* Model Dropdown */}
             <div className="relative inline-block">
                 <button
                     onClick={() => setmodelListOpen(!modelListOpen)}
@@ -72,55 +76,67 @@ function Footer(){
                 >
                     <div className="flex gap-1">
                         {modelName}
-                        {
-                            modelListOpen ? (
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                                </svg>
-                            ) : (
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
-                                </svg>
-                            )
-                        }
+                        {modelListOpen ? (
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                            </svg>
+                        ) : (
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+                            </svg>
+                        )}
                     </div>
                 </button>
                 {modelListOpen && (
                     <ul className="absolute bottom-full mb-2 w-48 bg-white shadow-lg rounded-lg border z-10 max-h-48 overflow-y-auto">
                         {models.map((m) => (
-                            <li key={m} className="px-4 py-2 hover:bg-gray-100 cursor-pointer truncate" onClick={() => {dispatch(setModelName(m)); setmodelListOpen(false)}}>{m}</li>
+                            <li
+                                key={m}
+                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer truncate"
+                                onClick={() => { dispatch(setModelName(m)); setmodelListOpen(false); }}
+                            >
+                                {m}
+                            </li>
                         ))}
                     </ul>
                 )}
             </div>
+
+            {/* Collection Dropdown */}
             <div className="relative inline-block">
                 <button
                     onClick={() => setCollectionOpen(!collectionOpen)}
                     className="bg-green-500 text-white rounded p-2 truncate cursor-pointer"
                 >
                     <div className="flex gap-1">
-                        {selectedCollection}
-                        {
-                            collectionOpen ? (
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                                </svg>
-                            ) : (
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
-                                </svg>
-                            )
-                        }
+                        {selectedCollection || "Select Collection"}
+                        {collectionOpen ? (
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                            </svg>
+                        ) : (
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+                            </svg>
+                        )}
                     </div>
                 </button>
                 {collectionOpen && (
                     <ul className="absolute bottom-full mb-2 w-48 bg-white shadow-lg rounded-lg border z-10 max-h-48 overflow-y-auto">
                         {collections.map((c) => (
-                            <li key={c} className="px-4 py-2 hover:bg-gray-100 cursor-pointer" onClick={() => {dispatch(setSelectedCollection(c)); setCollectionOpen(false)}}>{c}</li>
+                            <li
+                                key={c}
+                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                                onClick={() => { dispatch(setSelectedCollection(c)); setCollectionOpen(false); }}
+                            >
+                                {c}
+                            </li>
                         ))}
                     </ul>
                 )}
             </div>
+
+            {/* Prompt Input */}
             <input
                 type="text"
                 placeholder="Enter Prompt"
@@ -129,6 +145,8 @@ function Footer(){
                 onChange={(e) => setUserPrompt(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && checkConversationId()}
             />
+
+            {/* Upload Button */}
             <button className="bg-purple-500 rounded p-2 text-white cursor-pointer"
                 onClick={() => setOpen(true)}
             >
@@ -136,14 +154,25 @@ function Footer(){
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
             </button>
+
+            {/* Send Button */}
             <button className="bg-green-600 rounded p-2 text-white cursor-pointer" onClick={checkConversationId}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
                 </svg>
             </button>
-            <UploadModal isOpen={open} onClose={() => setOpen(false)} />
+
+            {/* Upload Modal */}
+            <UploadModal
+                isOpen={open}
+                onClose={() => setOpen(false)}
+                onCollectionCreated={(newName: string) => {
+                    getCollections();                     // refresh list
+                    dispatch(setSelectedCollection(newName)); // auto-select new collection
+                }}
+            />
         </div>
-    )
+    );
 }
 
 export default Footer;

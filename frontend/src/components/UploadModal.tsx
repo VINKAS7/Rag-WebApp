@@ -1,6 +1,14 @@
 import { useState } from "react";
 
-function UploadModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+function UploadModal({
+    isOpen,
+    onClose,
+    onCollectionCreated
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    onCollectionCreated: (name: string) => void; // ⬅️ pass back new collection name
+}) {
     const [files, setFiles] = useState<File[]>([]);
     const [collectionName, setCollectionName] = useState("");
     const [isUploading, setIsUploading] = useState(false);
@@ -39,6 +47,11 @@ function UploadModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
 
             const data = await response.json();
             alert(`Collection '${data.collection}' created successfully with files: ${data.files.join(", ")}`);
+
+            // ✅ Refresh collection list + auto-select new collection
+            onCollectionCreated(data.collection);
+
+            // reset
             setFiles([]);
             setCollectionName("");
             onClose();

@@ -51,7 +51,11 @@ class TinyDB_Utils_Global:
         ]
 
     def delete_conversation(self, uid):
-        self.db.remove(self.conversation.conversation_id == uid)
+        try:
+            self.db.remove(self.conversation.conversation_id == uid)
+            return True
+        except:
+            return False
 
     
     def get_uid_history(self, uid):

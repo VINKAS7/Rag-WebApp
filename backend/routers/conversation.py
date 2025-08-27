@@ -143,6 +143,7 @@ def delete_conversation(uid: str):
                 "db",
                 f"{conversation_info['conversation_id']}.json"
             )
+            print(db_path)
             if os.path.exists(db_path):
                 os.remove(db_path)
             return {"status": "success"}

@@ -5,11 +5,12 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "chromadb>=1.0.20",
+    "docling>=2.48.0",
     "fastapi>=0.116.1",
     "ollama>=0.5.3",
-    "python-magic-bin>=0.4.14",
+    "sentence-transformers>=5.1.0",
     "tinydb>=4.8.2",
-    "unstructured-ingest[chroma,huggingface]>=1.2.11",
-    "unstructured[all-docs]>=0.18.13",
+    "transformers>=4.55.2",
     "uvicorn>=0.35.0",
 ]
