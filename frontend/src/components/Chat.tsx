@@ -1,7 +1,8 @@
 import type { RootState } from "../app/store";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setChat, setNewConversation, updateLastModelMessage } from "../features/chatSlice";
+import { setChat, setNewConversation, updateLastModelMessage, setHistory } from "../features/chatSlice";
+import { setConversationId, setModelName, setSelectedCollection } from "../features/footerSlice";
 import { useLocation, useParams } from "react-router-dom";
 
 function Chat() {
@@ -12,15 +13,49 @@ function Chat() {
     const newConversation = useSelector((state: RootState) => state.chat.newConversation);
     const { selectedCollection, modelName } = useSelector((state: RootState) => state.footer);
     const lastMessage = conversation.length > 0 ? conversation[conversation.length - 1] : null;
+
+    function isPlaceholderSelection(value?: string | null) {
+        if (!value) return true;
+        const v = value.toLowerCase();
+        return v === "select model" || v === "select collection";
+    }
+
+    // Hydrate conversation when directly landing on /conversation/{id}
     useEffect(() => {
-        if (newConversation && location.state?.user) {
-            dispatch(setChat({ user: location.state.user }));
+        const bootstrapConversation = async () => {
+            if (!conversationIdFromUrl || conversation.length > 0) return;
+            try {
+                const res = await fetch(`http://localhost:3000/conversation/get_conversation/${conversationIdFromUrl}`);
+                const data = await res.json();
+                if (data.status === 'success') {
+                    const history = data.conversation_history || data.collection_conversation;
+                    if (Array.isArray(history)) {
+                        dispatch(setHistory(history));
+                    } else {
+                        dispatch(setHistory([]));
+                    }
+                    if (data.modelName) dispatch(setModelName(data.modelName));
+                    if (data.collectionName) dispatch(setSelectedCollection(data.collectionName));
+                    dispatch(setConversationId(conversationIdFromUrl));
+                }
+            } catch {
+                // ignore bootstrap errors
+            }
+        };
+        bootstrapConversation();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [conversationIdFromUrl]);
+
+    useEffect(() => {
+        if (newConversation && (location.state as any)?.user) {
+            dispatch(setChat({ user: (location.state as any).user }));
             dispatch(setNewConversation(false));
         }
     }, [dispatch, location.state, newConversation]);
+
     useEffect(() => {
         const fetchResponse = async (userPrompt: string) => {
-            if (!modelName || !selectedCollection || !conversationIdFromUrl) {
+            if (isPlaceholderSelection(modelName) || isPlaceholderSelection(selectedCollection) || !conversationIdFromUrl) {
                 return;
             }
             dispatch(setChat({ model: "Fetching response..." }));

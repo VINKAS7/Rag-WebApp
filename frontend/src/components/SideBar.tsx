@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom"; // Import useParams
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setConversationId, setModelName, setSelectedCollection } from "../features/footerSlice";
 import { setHistory, setNewConversation } from "../features/chatSlice";
 import { PromptTemplateModal } from "./PromptTemplateModal";
+import type { RootState } from "../app/store";
 
 interface Conversation {
     conversation_summary: string;
@@ -18,22 +19,43 @@ function SideBar() {
     const { id: activeConversationId } = useParams<{ id: string }>();
     const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
 
+    const chatMessages = useSelector((state: RootState) => state.chat.chats);
+    const lastMessage = chatMessages.length > 0 ? chatMessages[chatMessages.length - 1] : null;
+
+    const fetchHistory = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch("http://localhost:3000/conversation/get_history");
+            if (!res.ok) throw new Error("Failed to fetch history");
+            const data = await res.json();
+            setConversations(data);
+        } catch (err) {
+            console.error("Error fetching history:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchHistory = async () => {
-            setLoading(true);
-            try {
-                const res = await fetch("http://localhost:3000/conversation/get_history");
-                if (!res.ok) throw new Error("Failed to fetch history");
-                const data = await res.json();
-                setConversations(data);
-            } catch (err) {
-                console.error("Error fetching history:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchHistory();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // Refresh history when active conversation id changes (e.g., after navigate)
+    useEffect(() => {
+        if (activeConversationId) {
+            fetchHistory();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeConversationId]);
+
+    // Refresh history when a model message arrives (first backend response persists new conversation)
+    useEffect(() => {
+        if (lastMessage && lastMessage.model) {
+            fetchHistory();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [lastMessage?.model]);
 
     const handleNewChat = () => {
         dispatch(setConversationId(null));
@@ -75,7 +97,21 @@ function SideBar() {
                 method: 'DELETE',
             });
             if (!res.ok) throw new Error("Failed to delete conversation");
+
+            // Optimistically update UI
             setConversations(prev => prev.filter(c => c.conversation_id !== convId));
+
+            // If currently viewing the deleted conversation, reset UI and go Home
+            if (activeConversationId === convId) {
+                dispatch(setConversationId(null));
+                dispatch(setHistory([]));
+                dispatch(setModelName("Select Model"));
+                dispatch(setSelectedCollection("Select Collection"));
+                navigate("/");
+            }
+
+            // Sync with backend to be sure
+            await fetchHistory();
         } catch (err) {
             console.error("Error deleting conversation:", err);
         }

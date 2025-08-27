@@ -21,6 +21,8 @@ function Footer() {
     const conversationId = useSelector((state: RootState) => state.footer.conversationId);
     const modelName = useSelector((state: RootState) => state.footer.modelName);
 
+    const selectionLocked = Boolean(conversationId);
+
     const getCollections = async () => {
         const res = await fetch("http://localhost:3000/api/get_collections");
         const c = await res.json();
@@ -31,18 +33,21 @@ function Footer() {
         const res = await fetch("http://localhost:3000/api/get_ollama_models");
         const m = await res.json();
         setModels(m);
-        if (!modelName && m.length > 0) {
-            dispatch(setModelName(m[0]));
-        }
     };
 
     useEffect(() => {
         getCollections();
         getModels();
-    }, [dispatch, modelName]);
+    }, []);
+
+    function isPlaceholderSelection(value: string | null | undefined) {
+        if (!value) return true;
+        const v = value.toLowerCase();
+        return v === "select model".toLowerCase() || v === "select collection".toLowerCase();
+    }
 
     async function checkConversationId() {
-        if (!userPrompt.trim() || !modelName || !selectedCollection) {
+        if (!userPrompt.trim() || isPlaceholderSelection(modelName) || isPlaceholderSelection(selectedCollection)) {
             alert("Please select a model, a collection, and enter a prompt.");
             return;
         }
@@ -52,11 +57,6 @@ function Footer() {
             dispatch(setConversationId(newCid));
             dispatch(setNewConversation(true));
             dispatch(setHistory([]));
-            fetch("http://localhost:3000/conversation/get_history")
-                .then(res => res.json())
-                .then(history => {
-                    dispatch(setHistory(history));
-                });
             navigate(`/conversation/${newCid}`, {
                 state: { "user": userPrompt }
             });
@@ -71,12 +71,14 @@ function Footer() {
             {/* Model Dropdown */}
             <div className="relative inline-block">
                 <button
-                    onClick={() => setmodelListOpen(!modelListOpen)}
-                    className="bg-blue-500 text-white rounded p-2 truncate cursor-pointer"
+                    onClick={() => !selectionLocked && setmodelListOpen(!modelListOpen)}
+                    className={`bg-blue-500 text-white rounded p-2 truncate ${selectionLocked ? "cursor-not-allowed" : "cursor-pointer"}`}
+                    disabled={selectionLocked}
+                    title={selectionLocked ? "Change model on Home before starting a chat" : undefined}
                 >
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 items-center">
                         {modelName}
-                        {modelListOpen ? (
+                        {!selectionLocked && (modelListOpen ? (
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                             </svg>
@@ -84,10 +86,10 @@ function Footer() {
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
                             </svg>
-                        )}
+                        ))}
                     </div>
                 </button>
-                {modelListOpen && (
+                {!selectionLocked && modelListOpen && (
                     <ul className="absolute bottom-full mb-2 w-48 bg-white shadow-lg rounded-lg border z-10 max-h-48 overflow-y-auto">
                         {models.map((m) => (
                             <li
@@ -105,12 +107,14 @@ function Footer() {
             {/* Collection Dropdown */}
             <div className="relative inline-block">
                 <button
-                    onClick={() => setCollectionOpen(!collectionOpen)}
-                    className="bg-green-500 text-white rounded p-2 truncate cursor-pointer"
+                    onClick={() => !selectionLocked && setCollectionOpen(!collectionOpen)}
+                    className={`bg-green-500 text-white rounded p-2 truncate ${selectionLocked ? "cursor-not-allowed" : "cursor-pointer"}`}
+                    disabled={selectionLocked}
+                    title={selectionLocked ? "Change collection on Home before starting a chat" : undefined}
                 >
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 items-center">
                         {selectedCollection || "Select Collection"}
-                        {collectionOpen ? (
+                        {!selectionLocked && (collectionOpen ? (
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                             </svg>
@@ -118,10 +122,10 @@ function Footer() {
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
                             </svg>
-                        )}
+                        ))}
                     </div>
                 </button>
-                {collectionOpen && (
+                {!selectionLocked && collectionOpen && (
                     <ul className="absolute bottom-full mb-2 w-48 bg-white shadow-lg rounded-lg border z-10 max-h-48 overflow-y-auto">
                         {collections.map((c) => (
                             <li
@@ -167,8 +171,8 @@ function Footer() {
                 isOpen={open}
                 onClose={() => setOpen(false)}
                 onCollectionCreated={(newName: string) => {
-                    getCollections();                     // refresh list
-                    dispatch(setSelectedCollection(newName)); // auto-select new collection
+                    getCollections();
+                    dispatch(setSelectedCollection(newName));
                 }}
             />
         </div>

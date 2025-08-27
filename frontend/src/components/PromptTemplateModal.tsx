@@ -17,13 +17,34 @@ const CloseIcon = (
     </svg>
 );
 
+function dedupeByName(items: PromptTemplate[]): PromptTemplate[] {
+    const map = new Map<string, PromptTemplate>();
+    for (const t of items) {
+        map.set(t.name, t); // last one wins
+    }
+    return Array.from(map.values());
+}
+
 export function PromptTemplateModal({ isOpen, onClose }: PromptTemplateModalProps) {
     const [templates, setTemplates] = useState<PromptTemplate[]>([]);
     const [templateName, setTemplateName] = useState("");
     const [promptContent, setPromptContent] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [activeMode, setActiveMode] = useState<"default" | "custom">("default");
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    const fetchActiveMode = async () => {
+        try {
+            const res = await fetch("http://localhost:3000/conversation/get_active_prompt_mode");
+            const data = await res.json();
+            if (data.status === 'success') {
+                setActiveMode(data.mode === 'custom' ? 'custom' : 'default');
+            }
+        } catch (e) {
+            // ignore
+        }
+    };
 
     useEffect(() => {
         if (isOpen) {
@@ -35,7 +56,7 @@ export function PromptTemplateModal({ isOpen, onClose }: PromptTemplateModalProp
                     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
                     const data = await res.json();
                     if (data.status === 'success') {
-                        setTemplates(data.templates);
+                        setTemplates(dedupeByName(data.templates));
                     } else {
                         throw new Error("Failed to fetch templates from API");
                     }
@@ -47,14 +68,51 @@ export function PromptTemplateModal({ isOpen, onClose }: PromptTemplateModalProp
                 }
             };
             fetchAllTemplates();
+            fetchActiveMode();
         }
     }, [isOpen]);
 
-    const handleSelectTemplate = (name: string) => {
+    const applyTemplate = async (name: string, content: string) => {
+        try {
+            const res = await fetch("http://localhost:3000/conversation/new_prompt_template", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    template_name: name,
+                    template: content
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok || data.status !== 'success') {
+                throw new Error(data.detail || "Failed to apply template");
+            }
+            setActiveMode('custom');
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleSelectTemplate = async (name: string) => {
         setTemplateName(name);
         const selected = templates.find(t => t.name === name);
         if (selected) {
             setPromptContent(selected.prompt_template);
+            // Auto-apply selected template so it becomes active immediately
+            await applyTemplate(name, selected.prompt_template);
+        }
+    };
+
+    const handleToggleDefault = async () => {
+        try {
+            const res = await fetch("http://localhost:3000/conversation/use_default_prompt", { method: 'POST' });
+            const data = await res.json();
+            if (res.ok && data.status === 'success') {
+                setActiveMode('default');
+                setTemplateName("");
+                setPromptContent("");
+            }
+        } catch (e) {
+            console.error(e);
         }
     };
     
@@ -78,10 +136,11 @@ export function PromptTemplateModal({ isOpen, onClose }: PromptTemplateModalProp
             if (!res.ok || data.status !== 'success') {
                 throw new Error(data.detail || "Failed to save template");
             }
-            const updatedTemplates = await (await fetch("http://localhost:3000/conversation/get_all_prompt_templates")).json();
-            if(updatedTemplates.status === 'success') {
-                setTemplates(updatedTemplates.templates);
+            const updated = await (await fetch("http://localhost:3000/conversation/get_all_prompt_templates")).json();
+            if(updated.status === 'success') {
+                setTemplates(dedupeByName(updated.templates));
             }
+            setActiveMode('custom');
         } catch (err: any) {
             setError(err.message);
             console.error(err);
@@ -148,7 +207,7 @@ export function PromptTemplateModal({ isOpen, onClose }: PromptTemplateModalProp
             }
         }
     };
-
+    
     const DraggableTag = ({ tag }: { tag: string }) => (
         <span draggable onDragStart={(e) => handleDragStart(e, tag)} className="cursor-grab bg-gray-600 hover:bg-gray-500 px-3 py-1 rounded-md text-sm font-mono transition-colors">
             {tag}
@@ -173,13 +232,34 @@ export function PromptTemplateModal({ isOpen, onClose }: PromptTemplateModalProp
                     {/* Left Column: List of Templates */}
                     <div className="col-span-1 flex flex-col overflow-hidden">
                         <h4 className="text-lg font-semibold mb-3 text-gray-300 cursor-pointer">Saved Templates</h4>
+                        <div className="flex items-center gap-2 mb-2">
+                            <input
+                                id="chk-default"
+                                type="checkbox"
+                                checked={activeMode === 'default'}
+                                onChange={async () => {
+                                    await handleToggleDefault();
+                                }}
+                                className="cursor-pointer"
+                            />
+                            <label htmlFor="chk-default" className="text-sm">Default prompt</label>
+                        </div>
                         <div className="flex-1 bg-[#111827] p-2 rounded-lg overflow-y-auto">
                             {isLoading && !templates.length ? <p className="text-gray-400 p-2">Loading...</p> : null}
                             {templates.length > 0 ? (
                                 <ul className="space-y-1">
                                     {templates.map(template => (
-                                        <li key={template.name}>
-                                            <button onClick={() => handleSelectTemplate(template.name)} className={`w-full text-left p-2.5 rounded-md text-sm transition-colors cursor-pointer ${templateName === template.name ? 'bg-blue-600 font-semibold' : 'hover:bg-gray-700/50'}`}>
+                                        <li key={template.name} className="flex items-center gap-2">
+                                            <input
+                                                id={`chk-${template.name}`}
+                                                type="checkbox"
+                                                checked={activeMode === 'custom' && templateName === template.name}
+                                                onChange={async () => {
+                                                    await handleSelectTemplate(template.name);
+                                                }}
+                                                className="cursor-pointer"
+                                            />
+                                            <button onClick={() => handleSelectTemplate(template.name)} className={`flex-1 text-left p-2.5 rounded-md text-sm transition-colors cursor-pointer ${templateName === template.name && activeMode === 'custom' ? 'bg-blue-600 font-semibold' : 'hover:bg-gray-700/50'}`}>
                                                 {template.name}
                                             </button>
                                         </li>

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File
 import os
 import shutil
-from utils.ollama_utils import models_avaliable
+from utils.ollama_utils import models_available
 from utils.pipeline import run_pipeline
 
 router = APIRouter(
@@ -13,7 +13,7 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../collectio
 
 @router.get("/get_ollama_models")
 def get_ollama_models():
-    return models_avaliable()
+    return models_available()
 
 @router.get("/get_collections")
 def get_collections():

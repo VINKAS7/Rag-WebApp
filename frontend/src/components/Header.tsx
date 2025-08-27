@@ -1,6 +1,11 @@
+import { useNavigate } from "react-router-dom";
+
 function Header() {
+    const navigate = useNavigate();
     return (
-    <div className="flex justify-center items-center py-6 sticky top-0 z-20 bg-white backdrop-blur-md cursor-pointer select-none">
+    <div className="flex justify-center items-center py-6 sticky top-0 z-20 bg-white backdrop-blur-md cursor-pointer select-none"
+        onClick={() => navigate("/")}
+    >
         <span className="relative group mr-3 italic text-3xl leading-[3rem] font-extrabold transition-transform duration-300 hover:scale-110">
             <span className="block group-hover:hidden bg-gradient-to-r from-blue-500 to-cyan-400 bg-clip-text text-transparent">
                 Rag

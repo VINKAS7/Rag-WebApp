@@ -114,6 +114,22 @@ def new_prompt_template(template: PromptTemplate):
     global_db_prompt.save_prompt_template(template.template_name, template.template)
     return {"status": "success", "template": template.template}
 
+@router.post("/use_default_prompt")
+def use_default_prompt():
+    """Revert to the built-in DEFAULT_TEMPLATE for RAG."""
+    prompt_template_store["template"] = DEFAULT_TEMPLATE
+    return {"status": "success", "mode": "default"}
+
+@router.get("/get_active_prompt_mode")
+def get_active_prompt_mode():
+    """Check if the current in-memory template equals the DEFAULT_TEMPLATE."""
+    try:
+        current = prompt_template_store.get("template", DEFAULT_TEMPLATE)
+        mode = "default" if current == DEFAULT_TEMPLATE else "custom"
+        return {"status": "success", "mode": mode}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/get_prompt_template/{template_name}")
 def get_prompt_template(template_name: str):
     global_db_prompt = Tiny_DB_Global_Prompt()
