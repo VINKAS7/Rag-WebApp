@@ -12,6 +12,8 @@ function Footer() {
     const [collectionOpen, setCollectionOpen] = useState(false);
     const [collections, setCollections] = useState<string[]>([]);
     const [models, setModels] = useState<string[]>([]);
+    const [modelSearch, setModelSearch] = useState("");
+    const [collectionSearch, setCollectionSearch] = useState("");
     const [userPrompt, setUserPrompt] = useState("");
     const [open, setOpen] = useState(false);
 
@@ -90,17 +92,36 @@ function Footer() {
                     </div>
                 </button>
                 {!selectionLocked && modelListOpen && (
-                    <ul className="absolute bottom-full mb-2 w-48 bg-white shadow-lg rounded-lg border z-10 max-h-48 overflow-y-auto">
-                        {models.map((m) => (
-                            <li
-                                key={m}
-                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer truncate"
-                                onClick={() => { dispatch(setModelName(m)); setmodelListOpen(false); }}
-                            >
-                                {m}
-                            </li>
-                        ))}
-                    </ul>
+                    <div className="absolute bottom-full mb-2 w-64 bg-white shadow-lg rounded-lg border z-10 max-h-64 overflow-y-auto">
+                        <div className="p-2 border-b">
+                            <input
+                                type="text"
+                                placeholder="Search models..."
+                                className="w-full px-2 py-1 border rounded"
+                                value={modelSearch}
+                                onChange={(e) => setModelSearch(e.target.value)}
+                            />
+                        </div>
+                        <ul>
+                            {models
+                                .filter((m) => m.toLowerCase().includes(modelSearch.toLowerCase()))
+                                .map((m) => (
+                                    <li
+                                        key={m}
+                                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer truncate"
+                                        onClick={() => { dispatch(setModelName(m)); setmodelListOpen(false); setModelSearch(""); }}
+                                    >
+                                        {m}
+                                    </li>
+                                ))}
+                            {models.length === 0 && (
+                                <li className="px-4 py-2 text-gray-500 text-sm">No model available</li>
+                            )}
+                            {models.length > 0 && models.filter((m) => m.toLowerCase().includes(modelSearch.toLowerCase())).length === 0 && (
+                                <li className="px-4 py-2 text-gray-500 text-sm">No results</li>
+                            )}
+                        </ul>
+                    </div>
                 )}
             </div>
 
@@ -126,17 +147,36 @@ function Footer() {
                     </div>
                 </button>
                 {!selectionLocked && collectionOpen && (
-                    <ul className="absolute bottom-full mb-2 w-48 bg-white shadow-lg rounded-lg border z-10 max-h-48 overflow-y-auto">
-                        {collections.map((c) => (
-                            <li
-                                key={c}
-                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                                onClick={() => { dispatch(setSelectedCollection(c)); setCollectionOpen(false); }}
-                            >
-                                {c}
-                            </li>
-                        ))}
-                    </ul>
+                    <div className="absolute bottom-full mb-2 w-64 bg-white shadow-lg rounded-lg border z-10 max-h-64 overflow-y-auto">
+                        <div className="p-2 border-b">
+                            <input
+                                type="text"
+                                placeholder="Search collections..."
+                                className="w-full px-2 py-1 border rounded"
+                                value={collectionSearch}
+                                onChange={(e) => setCollectionSearch(e.target.value)}
+                            />
+                        </div>
+                        <ul>
+                            {collections
+                                .filter((c) => c.toLowerCase().includes(collectionSearch.toLowerCase()))
+                                .map((c) => (
+                                    <li
+                                        key={c}
+                                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                                        onClick={() => { dispatch(setSelectedCollection(c)); setCollectionOpen(false); setCollectionSearch(""); }}
+                                    >
+                                        {c}
+                                    </li>
+                                ))}
+                            {collections.length === 0 && (
+                                <li className="px-4 py-2 text-gray-500 text-sm">No collections available</li>
+                            )}
+                            {collections.length > 0 && collections.filter((c) => c.toLowerCase().includes(collectionSearch.toLowerCase())).length === 0 && (
+                                <li className="px-4 py-2 text-gray-500 text-sm">No results</li>
+                            )}
+                        </ul>
+                    </div>
                 )}
             </div>
 

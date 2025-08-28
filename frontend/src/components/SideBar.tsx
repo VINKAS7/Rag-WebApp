@@ -14,6 +14,7 @@ function SideBar() {
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [isOpen, setIsOpen] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [historySearch, setHistorySearch] = useState("");
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { id: activeConversationId } = useParams<{ id: string }>();
@@ -146,11 +147,26 @@ function SideBar() {
                 </div>
 
                 {isOpen && (
-                    <div className="flex-1 overflow-y-auto p-2 space-y-1"> 
+                    <div className="flex-1 overflow-y-auto p-2 space-y-1">
+                        <div className="p-2">
+                            <input
+                                type="text"
+                                placeholder="Search history..."
+                                className="w-full px-3 py-2 rounded bg-gray-800 border border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={historySearch}
+                                onChange={(e) => setHistorySearch(e.target.value)}
+                            />
+                        </div>
                         {loading ? (
                             <div className="p-4 text-sm text-gray-400">Loading...</div>
                         ) : conversations.length > 0 ? (
-                            conversations.map((conv) => (
+                            conversations
+                                .filter((c) =>
+                                    c.conversation_summary
+                                        ?.toLowerCase()
+                                        .includes(historySearch.toLowerCase())
+                                )
+                                .map((conv) => (
                                 <div 
                                     key={conv.conversation_id}
                                     className={`group flex items-center justify-between rounded-md transition-colors ${activeConversationId === conv.conversation_id ? 'bg-blue-500/30' : 'hover:bg-gray-800'}`}

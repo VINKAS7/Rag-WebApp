@@ -90,7 +90,7 @@ class Tiny_DB_Global_Prompt:
 
     def delete_prompt_template(self, template_name):
         try:
-            self.db.remove(self.conversation.template_name == template_name)
+            self.db.remove(self.conversation.name == template_name)
             return True
         except:
             return False
