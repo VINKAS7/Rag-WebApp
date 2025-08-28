@@ -3,7 +3,10 @@ from pydantic import BaseModel
 from utils.ollama_utils import ollama_response
 from utils.tinydb_utils import TinyDB_Utils, TinyDB_Utils_Global, Tiny_DB_Global_Prompt
 import os
-from utils.rag_utils import query_chroma
+from utils.rag_utils import query_chroma, query_chroma_ranked, query_context_ranked, reciprocal_rank_fusion
+import chromadb
+from sentence_transformers import SentenceTransformer
+import uuid
 
 router = APIRouter(
     prefix="/conversation",
@@ -44,6 +47,19 @@ def generate_rag_prompt(context: str, question: str) -> str:
     except KeyError as e:
         return DEFAULT_TEMPLATE.format(context=context.strip(), question=question.strip())
 
+def save_previous_context(context:str, collection_name, conversation_id, model="BAAI/bge-large-en-v1.5"):
+    embedding_model = SentenceTransformer(model)
+    client = chromadb.PersistentClient(path=os.path.join("./collections/",collection_name,"context"))
+    collection = client.get_or_create_collection(
+        name=conversation_id,
+        metadata={"hnsw:space": "cosine"}
+    )
+    collection.add(
+        ids=str(uuid.uuid4()),
+        embeddings=embedding_model.encode(context, normalize_embeddings=True),
+        documents=context
+    )
+
 @router.post("/get_response")
 def get_response(prompt: UserPrompt):
     global_db = TinyDB_Utils_Global()
@@ -58,16 +74,27 @@ def get_response(prompt: UserPrompt):
     db_path = os.path.join("./collections", prompt.collectionName, "db", f"{prompt.conversation_id}.json")
     db = TinyDB_Utils(db_path)
     db.save_conversation(user=prompt.prompt)
-    context = ""
+    # Retrieve from both corpus (chroma) and contextual memory, then fuse via RRF
+    fused_context = ""
     if prompt.collectionName:
-        context = query_chroma(
+        chroma_ranked = query_chroma_ranked(
             collection_name=prompt.collectionName,
-            query_text=prompt.prompt
+            query_text=prompt.prompt,
+            n_results=5
         )
-    augmented_prompt = generate_rag_prompt(context, prompt.prompt)
+        context_ranked = query_context_ranked(
+            collection_name=prompt.collectionName,
+            conversation_id=prompt.conversation_id,
+            query_text=prompt.prompt,
+            n_results=5
+        )
+        top_docs = reciprocal_rank_fusion([chroma_ranked, context_ranked], k=60, top_k=5)
+        fused_context = "\n".join(top_docs)
+    augmented_prompt = generate_rag_prompt(fused_context, prompt.prompt)
     try:
         response = ollama_response(prompt.modelName, augmented_prompt).strip()
         db.save_conversation(model=response)
+        save_previous_context(prompt.prompt.strip() + "\n" + response.strip(), prompt.collectionName, prompt.conversation_id)
         return {"status": "success", "model_response": response}
     except Exception as e:
         return {"status": "failed"}

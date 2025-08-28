@@ -3,10 +3,10 @@ from docling_core.transforms.chunker.tokenizer.huggingface import HuggingFaceTok
 from docling.chunking import HybridChunker
 from transformers import AutoTokenizer
 from pathlib import Path
-import json
 from sentence_transformers import SentenceTransformer
 import chromadb
 import os
+import uuid
 
 def run_pipeline(input_dir, output_dir, collection_name, model="BAAI/bge-large-en-v1.5"):
     huggingface_tokenizer = AutoTokenizer.from_pretrained(model)
@@ -36,8 +36,8 @@ def run_pipeline(input_dir, output_dir, collection_name, model="BAAI/bge-large-e
         result = converter.convert(str(file_path))
         chunks_iter = chunker.chunk(dl_doc=result.document)
         processed_chunks = list(chunks_iter)
-        for i, chunk in enumerate(processed_chunks):
-            data["ids"].append(str(i))
+        for chunk in processed_chunks:
+            data["ids"].append(str(uuid.uuid4()))
             data["embeddings"].append(embedding_model.encode(chunk.text, normalize_embeddings=True))
             data["documents"].append(chunk.text)
     collection.add(
