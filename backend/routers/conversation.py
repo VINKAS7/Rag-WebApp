@@ -138,6 +138,14 @@ def new_prompt_template(template: PromptTemplate):
     global_db_prompt.save_prompt_template(template.template_name, template.template)
     return {"status": "success", "template": template.template}
 
+@router.delete("/delete_prompt_template/{template_name}")
+def delete_prompt_template(template_name: str):
+    db = Tiny_DB_Global_Prompt()
+    if db.delete_prompt_template(template_name=template_name):
+        return {"status": "success"}
+    else:
+        return {"status": "failed"}
+
 @router.post("/use_default_prompt")
 def use_default_prompt():
     """Revert to the built-in DEFAULT_TEMPLATE for RAG."""
