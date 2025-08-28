@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from utils.ollama_utils import ollama_response
 from utils.tinydb_utils import TinyDB_Utils, TinyDB_Utils_Global, Tiny_DB_Global_Prompt
 import os
-from utils.rag_utils import query_chroma, query_chroma_ranked, query_context_ranked, reciprocal_rank_fusion
+from utils.rag_utils import query_chroma_ranked, query_context_ranked, reciprocal_rank_fusion
 import chromadb
 from sentence_transformers import SentenceTransformer
 import uuid
@@ -74,7 +74,6 @@ def get_response(prompt: UserPrompt):
     db_path = os.path.join("./collections", prompt.collectionName, "db", f"{prompt.conversation_id}.json")
     db = TinyDB_Utils(db_path)
     db.save_conversation(user=prompt.prompt)
-    # Retrieve from both corpus (chroma) and contextual memory, then fuse via RRF
     fused_context = ""
     if prompt.collectionName:
         chroma_ranked = query_chroma_ranked(
