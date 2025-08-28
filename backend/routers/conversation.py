@@ -5,7 +5,7 @@ from utils.tinydb_utils import TinyDB_Utils, TinyDB_Utils_Global, Tiny_DB_Global
 import os
 from utils.rag_utils import query_chroma_ranked, query_context_ranked, reciprocal_rank_fusion
 import chromadb
-from sentence_transformers import SentenceTransformer
+from utils.sentence_model_cache import get_embedding_model
 import uuid
 
 router = APIRouter(
@@ -48,7 +48,7 @@ def generate_rag_prompt(context: str, question: str) -> str:
         return DEFAULT_TEMPLATE.format(context=context.strip(), question=question.strip())
 
 def save_previous_context(context:str, collection_name, conversation_id, model="BAAI/bge-large-en-v1.5"):
-    embedding_model = SentenceTransformer(model)
+    embedding_model = get_embedding_model(model)
     client = chromadb.PersistentClient(path=os.path.join("./collections/",collection_name,"context"))
     collection = client.get_or_create_collection(
         name=conversation_id,

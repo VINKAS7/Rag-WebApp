@@ -3,14 +3,15 @@ from docling_core.transforms.chunker.tokenizer.huggingface import HuggingFaceTok
 from docling.chunking import HybridChunker
 from transformers import AutoTokenizer
 from pathlib import Path
-from sentence_transformers import SentenceTransformer
 import chromadb
+from .sentence_model_cache import get_embedding_model
 import os
 import uuid
 
 def run_pipeline(input_dir, output_dir, collection_name, model="BAAI/bge-large-en-v1.5"):
+    
     huggingface_tokenizer = AutoTokenizer.from_pretrained(model)
-    embedding_model = SentenceTransformer(model)
+    embedding_model = get_embedding_model(model)
     converter = DocumentConverter()
     tokenizer = HuggingFaceTokenizer(
         tokenizer=huggingface_tokenizer,

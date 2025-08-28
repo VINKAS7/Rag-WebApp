@@ -1,7 +1,7 @@
 import chromadb
 import os
 from typing import List, Tuple, Dict
-from sentence_transformers import SentenceTransformer
+from .sentence_model_cache import get_embedding_model
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../collections"))
 
@@ -12,7 +12,7 @@ def query_chroma_ranked(collection_name: str, query_text: str, n_results: int = 
             return []
         client = chromadb.PersistentClient(path=chroma_path)
         collection = client.get_collection(name=collection_name)
-        embedding_model = SentenceTransformer(model)
+        embedding_model = get_embedding_model(model)
         prompt_embedding = embedding_model.encode(query_text, normalize_embeddings=True)
         results = collection.query(
             query_embeddings=[prompt_embedding],
@@ -36,7 +36,7 @@ def query_context_ranked(collection_name: str, conversation_id: str, query_text:
             return []
         client = chromadb.PersistentClient(path=context_path)
         collection = client.get_or_create_collection(name=conversation_id, metadata={"hnsw:space": "cosine"})
-        embedding_model = SentenceTransformer(model)
+        embedding_model = get_embedding_model(model)
         prompt_embedding = embedding_model.encode(query_text, normalize_embeddings=True)
         results = collection.query(
             query_embeddings=[prompt_embedding],

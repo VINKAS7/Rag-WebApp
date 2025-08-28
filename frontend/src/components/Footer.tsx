@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { setChat, setNewConversation, setHistory } from "../features/chatSlice";
 import UploadModal from "./UploadModal";
+import { Skeleton } from "@mui/material";
 
 function Footer() {
     const [modelListOpen, setmodelListOpen] = useState(false);
@@ -16,6 +17,8 @@ function Footer() {
     const [collectionSearch, setCollectionSearch] = useState("");
     const [userPrompt, setUserPrompt] = useState("");
     const [open, setOpen] = useState(false);
+    const [modelsLoading, setModelsLoading] = useState(false);
+    const [collectionsLoading, setCollectionsLoading] = useState(false);
 
     const dispatch = useDispatch();
     const selectedCollection = useSelector((state: RootState) => state.footer.selectedCollection);
@@ -26,15 +29,25 @@ function Footer() {
     const selectionLocked = Boolean(conversationId);
 
     const getCollections = async () => {
-        const res = await fetch("http://localhost:3000/api/get_collections");
-        const c = await res.json();
-        setCollections(c);
+        setCollectionsLoading(true);
+        try {
+            const res = await fetch("http://localhost:3000/api/get_collections");
+            const c = await res.json();
+            setCollections(c);
+        } finally {
+            setCollectionsLoading(false);
+        }
     };
 
     const getModels = async () => {
-        const res = await fetch("http://localhost:3000/api/get_ollama_models");
-        const m = await res.json();
-        setModels(m);
+        setModelsLoading(true);
+        try {
+            const res = await fetch("http://localhost:3000/api/get_ollama_models");
+            const m = await res.json();
+            setModels(m);
+        } finally {
+            setModelsLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -102,25 +115,33 @@ function Footer() {
                                 onChange={(e) => setModelSearch(e.target.value)}
                             />
                         </div>
-                        <ul>
-                            {models
-                                .filter((m) => m.toLowerCase().includes(modelSearch.toLowerCase()))
-                                .map((m) => (
-                                    <li
-                                        key={m}
-                                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer truncate"
-                                        onClick={() => { dispatch(setModelName(m)); setmodelListOpen(false); setModelSearch(""); }}
-                                    >
-                                        {m}
-                                    </li>
-                                ))}
-                            {models.length === 0 && (
-                                <li className="px-4 py-2 text-gray-500 text-sm">No model available</li>
-                            )}
-                            {models.length > 0 && models.filter((m) => m.toLowerCase().includes(modelSearch.toLowerCase())).length === 0 && (
-                                <li className="px-4 py-2 text-gray-500 text-sm">No results</li>
-                            )}
-                        </ul>
+                        {modelsLoading ? (
+                            <div className="p-2 space-y-2">
+                                <Skeleton variant="rectangular" height={28} />
+                                <Skeleton variant="rectangular" height={28} />
+                                <Skeleton variant="rectangular" height={28} />
+                            </div>
+                        ) : (
+                            <ul>
+                                {models
+                                    .filter((m) => m.toLowerCase().includes(modelSearch.toLowerCase()))
+                                    .map((m) => (
+                                        <li
+                                            key={m}
+                                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer truncate"
+                                            onClick={() => { dispatch(setModelName(m)); setmodelListOpen(false); setModelSearch(""); }}
+                                        >
+                                            {m}
+                                        </li>
+                                    ))}
+                                {models.length === 0 && (
+                                    <li className="px-4 py-2 text-gray-500 text-sm">No model available</li>
+                                )}
+                                {models.length > 0 && models.filter((m) => m.toLowerCase().includes(modelSearch.toLowerCase())).length === 0 && (
+                                    <li className="px-4 py-2 text-gray-500 text-sm">No results</li>
+                                )}
+                            </ul>
+                        )}
                     </div>
                 )}
             </div>
@@ -157,25 +178,33 @@ function Footer() {
                                 onChange={(e) => setCollectionSearch(e.target.value)}
                             />
                         </div>
-                        <ul>
-                            {collections
-                                .filter((c) => c.toLowerCase().includes(collectionSearch.toLowerCase()))
-                                .map((c) => (
-                                    <li
-                                        key={c}
-                                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                                        onClick={() => { dispatch(setSelectedCollection(c)); setCollectionOpen(false); setCollectionSearch(""); }}
-                                    >
-                                        {c}
-                                    </li>
-                                ))}
-                            {collections.length === 0 && (
-                                <li className="px-4 py-2 text-gray-500 text-sm">No collections available</li>
-                            )}
-                            {collections.length > 0 && collections.filter((c) => c.toLowerCase().includes(collectionSearch.toLowerCase())).length === 0 && (
-                                <li className="px-4 py-2 text-gray-500 text-sm">No results</li>
-                            )}
-                        </ul>
+                        {collectionsLoading ? (
+                            <div className="p-2 space-y-2">
+                                <Skeleton variant="rectangular" height={28} />
+                                <Skeleton variant="rectangular" height={28} />
+                                <Skeleton variant="rectangular" height={28} />
+                            </div>
+                        ) : (
+                            <ul>
+                                {collections
+                                    .filter((c) => c.toLowerCase().includes(collectionSearch.toLowerCase()))
+                                    .map((c) => (
+                                        <li
+                                            key={c}
+                                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                                            onClick={() => { dispatch(setSelectedCollection(c)); setCollectionOpen(false); setCollectionSearch(""); }}
+                                        >
+                                            {c}
+                                        </li>
+                                    ))}
+                                {collections.length === 0 && (
+                                    <li className="px-4 py-2 text-gray-500 text-sm">No collections available</li>
+                                )}
+                                {collections.length > 0 && collections.filter((c) => c.toLowerCase().includes(collectionSearch.toLowerCase())).length === 0 && (
+                                    <li className="px-4 py-2 text-gray-500 text-sm">No results</li>
+                                )}
+                            </ul>
+                        )}
                     </div>
                 )}
             </div>

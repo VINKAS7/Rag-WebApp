@@ -5,6 +5,7 @@ import { setConversationId, setModelName, setSelectedCollection } from "../featu
 import { setHistory, setNewConversation } from "../features/chatSlice";
 import { PromptTemplateModal } from "./PromptTemplateModal";
 import type { RootState } from "../app/store";
+import { Skeleton } from "@mui/material";
 
 interface Conversation {
     conversation_summary: string;
@@ -158,7 +159,12 @@ function SideBar() {
                             />
                         </div>
                         {loading ? (
-                            <div className="p-4 text-sm text-gray-400">Loading...</div>
+                            <div className="p-2 space-y-2">
+                                <Skeleton variant="rectangular" height={32} />
+                                <Skeleton variant="rectangular" height={32} />
+                                <Skeleton variant="rectangular" height={32} />
+                                <Skeleton variant="rectangular" height={32} />
+                            </div>
                         ) : conversations.length > 0 ? (
                             conversations
                                 .filter((c) =>
