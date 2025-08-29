@@ -83,7 +83,7 @@ function Footer() {
     }
 
     return (
-        <div className="flex justify-center items-center py-4 px-4 gap-2 border-t">
+        <div className="flex justify-center items-center py-4 px-4 gap-2 border-t bg-[#1D2839]">
             {/* Model Dropdown */}
             <div className="relative inline-block">
                 <button
@@ -214,7 +214,7 @@ function Footer() {
             <input
                 type="text"
                 placeholder="Enter Prompt"
-                className="flex-1 p-2 rounded border border-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="flex-1 p-2 rounded border border-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 text-white"
                 value={userPrompt}
                 onChange={(e) => setUserPrompt(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && checkConversationId()}
