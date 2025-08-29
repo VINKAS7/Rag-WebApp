@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom"; // Import useParams
 import { useDispatch, useSelector } from "react-redux";
 import { setConversationId, setModelName, setSelectedCollection } from "../features/footerSlice";
 import { setHistory, setNewConversation } from "../features/chatSlice";
+import { showError } from "../features/notificationSlice";
 import { PromptTemplateModal } from "./PromptTemplateModal";
 import type { RootState } from "../app/store";
 import { Skeleton } from "@mui/material";
@@ -33,6 +34,7 @@ function SideBar() {
             setConversations(data);
         } catch (err) {
             console.error("Error fetching history:", err);
+            dispatch(showError("Failed to fetch conversation history. Please try again."));
         } finally {
             setLoading(false);
         }
@@ -74,6 +76,7 @@ function SideBar() {
                 } else {
                     dispatch(setHistory([]));
                     console.error("Error: API response is missing history array.", data);
+                    dispatch(showError("Invalid conversation data received. Please try again."));
                 }
                 dispatch(setConversationId(convId));
                 dispatch(setModelName(data.modelName));
@@ -82,9 +85,11 @@ function SideBar() {
                 navigate(`/conversation/${convId}`);
             } else {
                 console.error("Failed to load conversation:", data.detail);
+                dispatch(showError("Failed to load conversation. Please try again."));
             }
         } catch (error) {
             console.error("Error fetching conversation:", error);
+            dispatch(showError("Failed to load conversation. Please try again."));
         }
     };
 
@@ -108,6 +113,7 @@ function SideBar() {
             await fetchHistory();
         } catch (err) {
             console.error("Error deleting conversation:", err);
+            dispatch(showError("Failed to delete conversation. Please try again."));
         }
     };
 

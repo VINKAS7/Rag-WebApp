@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setChat, setNewConversation, updateLastModelMessage, setHistory } from "../features/chatSlice";
 import { setConversationId, setModelName, setSelectedCollection } from "../features/footerSlice";
+import { showError } from "../features/notificationSlice";
 import { useLocation, useParams } from "react-router-dom";
 import { Skeleton } from "@mui/material";
 
@@ -42,6 +43,7 @@ function Chat() {
                 }
             } catch (e) {
                 console.error(e);
+                dispatch(showError("Failed to load conversation. Please try again."));
             } finally {
                 setIsBootstrapping(false);
             }
@@ -77,6 +79,7 @@ function Chat() {
                 dispatch(updateLastModelMessage({ model: data.model_response }));
             } else {
                 dispatch(updateLastModelMessage({ model: "Error: Failed to get a response." }));
+                dispatch(showError("Failed to get a response from the model. Please try again."));
             }
         };
         if (lastMessage && lastMessage.user && !lastMessage.model) {

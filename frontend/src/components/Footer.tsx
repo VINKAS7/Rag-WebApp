@@ -5,6 +5,7 @@ import type { RootState } from "../app/store";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { setChat, setNewConversation, setHistory } from "../features/chatSlice";
+import { showError } from "../features/notificationSlice";
 import UploadModal from "./UploadModal";
 import { Skeleton } from "@mui/material";
 
@@ -63,7 +64,7 @@ function Footer() {
 
     async function checkConversationId() {
         if (!userPrompt.trim() || isPlaceholderSelection(modelName) || isPlaceholderSelection(selectedCollection)) {
-            alert("Please select a model, a collection, and enter a prompt.");
+            dispatch(showError("Please select a model, a collection, and enter a prompt."));
             return;
         }
 

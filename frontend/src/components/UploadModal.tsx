@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { showError, showSuccess } from "../features/notificationSlice";
 
 function UploadModal({
     isOpen,
@@ -9,6 +11,7 @@ function UploadModal({
     onClose: () => void;
     onCollectionCreated: (name: string) => void;
 }) {
+    const dispatch = useDispatch();
     const [files, setFiles] = useState<File[]>([]);
     const [collectionName, setCollectionName] = useState("");
     const [isUploading, setIsUploading] = useState(false);
@@ -26,7 +29,7 @@ function UploadModal({
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!files.length || !collectionName.trim()) {
-            alert("Please provide a collection name and select at least one file.");
+            dispatch(showError("Please provide a collection name and select at least one file."));
             return;
         }
         setIsUploading(true);
@@ -46,7 +49,7 @@ function UploadModal({
             }
 
             const data = await response.json();
-            alert(`Collection '${data.collection}' created successfully with files: ${data.files.join(", ")}`);
+            dispatch(showSuccess(`Collection '${data.collection}' created successfully with files: ${data.files.join(", ")}`));
 
             onCollectionCreated(data.collection);
 
@@ -55,7 +58,7 @@ function UploadModal({
             onClose();
         } catch (err: any) {
             console.error(err);
-            alert(`Error uploading files: ${err.message}`);
+            dispatch(showError(`Error uploading files: ${err.message}`));
         } finally {
             setIsUploading(false);
         }
