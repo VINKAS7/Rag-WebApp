@@ -8,6 +8,7 @@ import { setChat, setNewConversation, setHistory } from "../features/chatSlice";
 import { showError } from "../features/notificationSlice";
 import UploadModal from "./UploadModal";
 import { Skeleton } from "@mui/material";
+import { Brain, FolderOpen, MessageSquare } from "lucide-react";
 
 function Footer() {
     const [modelListOpen, setmodelListOpen] = useState(false);
@@ -94,9 +95,44 @@ function Footer() {
             <div>
                 { 
                     isHomePage && (
-                        <div className="flex flex-col justify-center items-center">
-                            <div className="text-2xl">Welcome Back</div>
-                            <div className="text-xl">Hello</div>
+                        <div className="flex flex-col justify-center items-center mb-10 text-white px-6">
+                            {/* Title */}
+                            <div className="text-center space-y-2 mb-10">
+                                <h1 className="text-4xl font-extrabold">Welcome Back 👋</h1>
+                                <p className="text-lg text-white">
+                                Your RAG system is ready to help you.
+                                </p>
+                            </div>
+
+                            {/* Features */}
+                            <div className="grid gap-6 sm:grid-cols-3 max-w-4xl w-full">
+                                {/* Feature 1 */}
+                                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:bg-white/10 transition">
+                                <FolderOpen className="w-10 h-10 mx-auto text-indigo-400 mb-4" />
+                                <h3 className="text-lg font-semibold">Collections</h3>
+                                <p className="text-sm text-white mt-2">
+                                    Create and manage your document collections for better retrieval.
+                                </p>
+                                </div>
+
+                                {/* Feature 2 */}
+                                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:bg-white/10 transition">
+                                <Brain className="w-10 h-10 mx-auto text-purple-400 mb-4" />
+                                <h3 className="text-lg font-semibold">Ollama Models</h3>
+                                <p className="text-sm text-white mt-2">
+                                    Select from multiple models to generate intelligent responses.
+                                </p>
+                                </div>
+
+                                {/* Feature 3 */}
+                                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:bg-white/10 transition">
+                                <MessageSquare className="w-10 h-10 mx-auto text-pink-400 mb-4" />
+                                <h3 className="text-lg font-semibold">Ask Anything</h3>
+                                <p className="text-sm white mt-2">
+                                    Get context-aware answers powered by retrieval-augmented generation.
+                                </p>
+                                </div>
+                            </div>
                         </div>
                     )
                 }

@@ -244,7 +244,7 @@ export function PromptTemplateModal({ isOpen, onClose }: PromptTemplateModalProp
 
     return (
         <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50 backdrop-blur-sm">
-            <div className="bg-[#1F2937] border border-gray-700 rounded-xl shadow-2xl w-full max-w-5xl h-[75vh] text-white flex flex-col p-6">
+            <div className="bg-[#18181b] border border-gray-700 rounded-xl shadow-2xl w-full max-w-5xl h-[75vh] text-white flex flex-col p-6">
                 
                 {/* Modal Header */}
                 <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-700">
@@ -270,12 +270,12 @@ export function PromptTemplateModal({ isOpen, onClose }: PromptTemplateModalProp
                             />
                             <label htmlFor="chk-default" className="text-sm">Default prompt</label>
                         </div>
-                        <div className="flex-1 bg-[#111827] p-2 rounded-lg overflow-y-auto">
+                        <div className="flex-1 bg-[#36353f] p-2 rounded-lg overflow-y-auto">
                             {isLoading && !templates.length ? <p className="text-gray-400 p-2">Loading...</p> : null}
                             {templates.length > 0 ? (
                                 <ul className="space-y-1">
                                     {templates.map(template => (
-                                        <li key={template.name} className="flex items-center gap-2 justify-between">
+                                        <li key={template.name} className="flex items-center gap-2 justify-between bg-[#18181b] hover:hover:bg-[#5645ee] px-2 rounded-md">
                                             <input
                                                 id={`chk-${template.name}`}
                                                 type="checkbox"
@@ -286,11 +286,11 @@ export function PromptTemplateModal({ isOpen, onClose }: PromptTemplateModalProp
                                                 className="cursor-pointer"
                                             />
                                             <div className="flex items-center gap-2 flex-1">
-                                                <button onClick={() => handleSelectTemplate(template.name)} className={`flex-1 text-left p-2.5 rounded-md text-sm transition-colors cursor-pointer ${templateName === template.name && activeMode === 'custom' ? 'bg-blue-600 font-semibold' : 'hover:bg-gray-700/50'}`}>
+                                                <button onClick={() => handleSelectTemplate(template.name)} className={`flex-1 text-left p-2.5 rounded-md text-sm transition-colors cursor-pointer ${templateName === template.name && activeMode === 'custom' ? 'font-semibold' : 'hover:bg-[#5645ee]'}`}>
                                                     {template.name}
                                                 </button>
                                                 <button
-                                                    className="p-2 mr-1 rounded-md text-gray-400 hover:text-white hover:bg-red-500 transition-colors cursor-pointer"
+                                                    className="p-2 mr-1 rounded-md text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
                                                     title="Delete template"
                                                     onClick={() => handleDeleteTemplate(template.name)}
                                                 >
@@ -307,8 +307,8 @@ export function PromptTemplateModal({ isOpen, onClose }: PromptTemplateModalProp
                     {/* Right Column: Editor */}
                     <div className="col-span-3 flex flex-col gap-4">
                         <div>
-                            <label htmlFor="templateName" className="block text-sm font-medium text-gray-300 mb-1.5">Template Name</label>
-                            <input type="text" id="templateName" value={templateName} onChange={(e) => setTemplateName(e.target.value)} className="w-full p-2.5 bg-[#374151] border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors" />
+                            <label htmlFor="templateName" className="block text-sm font-medium text-white  mb-1.5">Template Name</label>
+                            <input type="text" id="templateName" value={templateName} onChange={(e) => setTemplateName(e.target.value)} className="w-full p-2.5 bg-[#36353f] border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors" />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-300 mb-2">Draggable Placeholders</label>
@@ -327,7 +327,7 @@ export function PromptTemplateModal({ isOpen, onClose }: PromptTemplateModalProp
                                 onKeyDown={handleKeyDown}
                                 onDragOver={handleDragOver}
                                 onDrop={handleDrop}
-                                className="w-full flex-1 p-4 bg-[#111827] border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm transition-colors resize-none"
+                                className="w-full flex-1 p-4 bg-[#36353f] border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm transition-colors resize-none"
                                 placeholder="Drag placeholders and type your template here..."
                             />
                         </div>
@@ -337,8 +337,8 @@ export function PromptTemplateModal({ isOpen, onClose }: PromptTemplateModalProp
                  {/* Modal Footer */}
                 <div className="flex justify-end items-center gap-4 mt-6 pt-4 border-t border-gray-700">
                     {error && <p className="text-red-400 text-sm mr-auto">{error}</p>}
-                    <button onClick={onClose} className="px-5 py-2 bg-gray-600 hover:bg-gray-500 rounded-md font-medium transition-colors cursor-pointer">Cancel</button>
-                    <button onClick={handleSave} disabled={isLoading} className="px-5 py-2 bg-green-600 hover:bg-green-500 rounded-md font-medium disabled:bg-gray-500 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                    <button onClick={onClose} className="px-5 py-2 bg-red-500 rounded-md font-medium transition-colors cursor-pointer">Cancel</button>
+                    <button onClick={handleSave} disabled={isLoading} className="px-5 py-2 bg-[#5645ee] rounded-md font-medium disabled:bg-gray-500 disabled:cursor-not-allowed transition-colors cursor-pointer">
                         {isLoading ? 'Saving...' : 'Save Template'}
                     </button>
                 </div>

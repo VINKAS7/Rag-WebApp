@@ -68,7 +68,7 @@ function UploadModal({
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
-            <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-md">
+            <div className="bg-[#18181b] rounded-2xl shadow-lg p-6 w-full max-w-md text-white">
                 <h2 className="text-xl font-semibold mb-4">Create New Collection</h2>
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     <input
@@ -76,35 +76,37 @@ function UploadModal({
                         placeholder="Collection Name"
                         value={collectionName}
                         onChange={(e) => setCollectionName(e.target.value)}
-                        className="border p-2 rounded w-full"
+                        className="p-2 rounded-md focus:ring-0 focus:outline-none w-full bg-[#36353f]"
                         required
                     />
                     <input
                         type="file"
                         multiple
                         onChange={handleFileChange}
-                        className="border p-2 rounded w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        className="p-2 rounded-md w-full bg-[#36353f] focus:ring-0 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     />
                     {files.length > 0 && (
-                        <div className="max-h-32 overflow-y-auto border rounded p-2 text-sm space-y-1">
+                        <div className="max-h-32 overflow-y-auto rounded p-2 text-sm space-y-1 bg-[#36353f] focus:ring-0 focus:outline-none">
                             {files.map((file, idx) => (
-                                <div key={idx} className="flex justify-between items-center bg-gray-50 px-2 py-1 rounded">
+                                <div key={idx} className="flex justify-between items-center px-2 py-1 rounded-md">
                                     <div className="flex flex-col overflow-hidden">
-                                        <span className="font-medium truncate">{file.name}</span>
-                                        <span className="text-gray-500 text-xs">{(file.size / 1024).toFixed(1)} KB</span>
+                                        <span className="font-medium truncate text-white">{file.name}</span>
+                                        <span className="text-white text-xs">{(file.size / 1024).toFixed(1)} KB</span>
                                     </div>
-                                    <button type="button" onClick={() => handleRemoveFile(idx)} className="text-red-500 hover:text-red-700 font-bold p-1">
-                                        &times;
+                                    <button type="button" onClick={() => handleRemoveFile(idx)} className="hover:text-red-500 font-bold p-1 cursor-pointer">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                        </svg>
                                     </button>
                                 </div>
                             ))}
                         </div>
                     )}
                     <div className="flex justify-end gap-2 mt-2">
-                        <button type="button" onClick={onClose} className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400" disabled={isUploading}>
+                        <button type="button" onClick={onClose} className="px-4 py-2 rounded bg-red-500 cursor-pointer" disabled={isUploading}>
                             Cancel
                         </button>
-                        <button type="submit" className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300" disabled={isUploading}>
+                        <button type="submit" className="px-4 py-2 rounded text-white bg-[#5645ee] disabled:opacity-50 cursor-pointer" disabled={isUploading}>
                             {isUploading ? "Uploading..." : "Upload"}
                         </button>
                     </div>

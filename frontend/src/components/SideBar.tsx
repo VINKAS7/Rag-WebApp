@@ -155,7 +155,7 @@ function SideBar() {
 
                 {isOpen && (
                     <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                        <div className="p-2">
+                        <div className="pb-3">
                             <input
                                 type="text"
                                 placeholder="Search history..."
@@ -166,10 +166,10 @@ function SideBar() {
                         </div>
                         {loading ? (
                             <div className="p-2 space-y-2">
-                                <Skeleton variant="rectangular" height={32} />
-                                <Skeleton variant="rectangular" height={32} />
-                                <Skeleton variant="rectangular" height={32} />
-                                <Skeleton variant="rectangular" height={32} />
+                                <Skeleton variant="rectangular" height={32} sx={{ bgcolor: "#36353f" }} />
+                                <Skeleton variant="rectangular" height={32} sx={{ bgcolor: "#36353f" }} />
+                                <Skeleton variant="rectangular" height={32} sx={{ bgcolor: "#36353f" }} />
+                                <Skeleton variant="rectangular" height={32} sx={{ bgcolor: "#36353f" }}/>
                             </div>
                         ) : conversations.length > 0 ? (
                             conversations
@@ -181,7 +181,7 @@ function SideBar() {
                                 .map((conv) => (
                                 <div 
                                     key={conv.conversation_id}
-                                    className={`group flex items-center justify-between rounded-md transition-colors ${activeConversationId === conv.conversation_id ? 'bg-[#18181b]' : 'hover:bg-[#5645ee]'}`}
+                                    className={`group flex items-center justify-between rounded-md transition-colors mb-2 bg-[#36353f] ${activeConversationId === conv.conversation_id ? 'bg-[#36353f]' : 'hover:bg-[#5645ee]'}`}
                                 >
                                     <button
                                         className="flex-grow flex items-center gap-2 px-3 py-2 text-left text-sm overflow-hidden"
