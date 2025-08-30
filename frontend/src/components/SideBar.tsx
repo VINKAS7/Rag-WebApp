@@ -125,13 +125,13 @@ function SideBar() {
 
     return (
         <>
-            <div className={`bg-gray-900 text-white flex flex-col border-r border-gray-800 transition-all duration-300 ${isOpen ? "w-64" : "w-16"}`}>
+            <div className={`bg-[#18181b] text-white flex flex-col border-r border-gray-800 transition-all duration-300 ${isOpen ? "w-64" : "w-16"}`}>
                 <div className="flex items-center justify-between p-4 border-b border-gray-800">
                     {isOpen && <h2 className="text-lg font-semibold">History</h2>}
                     <div className="flex justify-center items-center">
                         {isOpen && (
                             <button
-                                className="p-2 hover:bg-blue-500 rounded cursor-pointer"
+                                className="p-2 hover:bg-[#5645ee] rounded cursor-pointer"
                                 onClick={() => setIsPromptModalOpen(true)}
                                 title="Prompt Settings"
                             >
@@ -147,7 +147,7 @@ function SideBar() {
                     </div>
                 </div>
                 <div className="p-2 border-b border-gray-800">
-                    <button onClick={handleNewChat} className={`flex items-center gap-3 w-full px-3 py-2 bg-green-600 hover:bg-green-700 rounded text-sm font-medium cursor-pointer transition-all ${!isOpen && "justify-center"}`}>
+                    <button onClick={handleNewChat} className={`flex items-center gap-3 w-full px-3 py-2 bg-[#5645ee] rounded text-sm font-medium cursor-pointer transition-all ${!isOpen && "justify-center"}`}>
                         {PlusIcon}
                         {isOpen && "New Chat"}
                     </button>
@@ -159,7 +159,7 @@ function SideBar() {
                             <input
                                 type="text"
                                 placeholder="Search history..."
-                                className="w-full px-3 py-2 rounded bg-gray-800 border border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 rounded focus:outline-none focus:ring-0 bg-[#36353f]"
                                 value={historySearch}
                                 onChange={(e) => setHistorySearch(e.target.value)}
                             />
@@ -181,7 +181,7 @@ function SideBar() {
                                 .map((conv) => (
                                 <div 
                                     key={conv.conversation_id}
-                                    className={`group flex items-center justify-between rounded-md transition-colors ${activeConversationId === conv.conversation_id ? 'bg-blue-500/30' : 'hover:bg-gray-800'}`}
+                                    className={`group flex items-center justify-between rounded-md transition-colors ${activeConversationId === conv.conversation_id ? 'bg-[#18181b]' : 'hover:bg-[#5645ee]'}`}
                                 >
                                     <button
                                         className="flex-grow flex items-center gap-2 px-3 py-2 text-left text-sm overflow-hidden"
@@ -195,7 +195,7 @@ function SideBar() {
                                             e.stopPropagation();
                                             handleDeleteConversation(conv.conversation_id);
                                         }}
-                                        className="p-2 mr-1 rounded-md text-gray-400 hover:text-white hover:bg-red-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                        className="p-2 mr-1 rounded-md text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                                     >
                                         {TrashIcon}
                                     </button>

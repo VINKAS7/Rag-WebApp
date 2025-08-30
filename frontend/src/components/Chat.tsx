@@ -10,7 +10,7 @@ import { Skeleton } from "@mui/material";
 function Chat() {
     const dispatch = useDispatch();
     const location = useLocation();
-    const { id: conversationIdFromUrl } = useParams<{ id: string }>(); 
+    const { id: conversationIdFromUrl } = useParams<{ id: string }>();
     const conversation = useSelector((state: RootState) => state.chat?.chats ?? []);
     const newConversation = useSelector((state: RootState) => state.chat.newConversation);
     const { selectedCollection, modelName } = useSelector((state: RootState) => state.footer);
@@ -25,11 +25,17 @@ function Chat() {
 
     useEffect(() => {
         const bootstrapConversation = async () => {
+            if (newConversation) {
+                return;
+            }
+
             if (!conversationIdFromUrl || conversation.length > 0) return;
+
             try {
                 setIsBootstrapping(true);
                 const res = await fetch(`http://localhost:3000/conversation/get_conversation/${conversationIdFromUrl}`);
                 const data = await res.json();
+
                 if (data.status === 'success') {
                     const history = data.conversation_history || data.collection_conversation;
                     if (Array.isArray(history)) {
@@ -48,8 +54,9 @@ function Chat() {
                 setIsBootstrapping(false);
             }
         };
+
         bootstrapConversation();
-    }, [conversationIdFromUrl]);
+    }, [conversationIdFromUrl, newConversation]);
 
     useEffect(() => {
         if (newConversation && (location.state as any)?.user) {
@@ -63,7 +70,9 @@ function Chat() {
             if (isPlaceholderSelection(modelName) || isPlaceholderSelection(selectedCollection) || !conversationIdFromUrl) {
                 return;
             }
+
             dispatch(setChat({ model: "Fetching response..." }));
+
             const response = await fetch("http://localhost:3000/conversation/get_response", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -74,7 +83,9 @@ function Chat() {
                     "collectionName": selectedCollection
                 })
             });
+
             const data = await response.json();
+
             if (data.status === "success") {
                 dispatch(updateLastModelMessage({ model: data.model_response }));
             } else {
@@ -82,6 +93,7 @@ function Chat() {
                 dispatch(showError("Failed to get a response from the model. Please try again."));
             }
         };
+
         if (lastMessage && lastMessage.user && !lastMessage.model) {
             fetchResponse(lastMessage.user);
         }
@@ -105,7 +117,7 @@ function Chat() {
                     <div
                         key={idx}
                         className={`p-3 rounded-xl max-w-[70%] w-fit ${
-                            isUser ? "bg-blue-500 text-white self-end ml-auto" : "bg-gray-200 text-black self-start mr-auto"
+                            isUser ? "bg-[#5645ee] text-white self-end ml-auto" : "bg-[#18181b] text-white self-start mr-auto"
                         }`}
                     >
                         {isModelFetchingPlaceholder ? (

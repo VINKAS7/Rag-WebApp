@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelectedCollection, setModelName, setConversationId } from "../features/footerSlice";
 import type { RootState } from "../app/store";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { setChat, setNewConversation, setHistory } from "../features/chatSlice";
 import { showError } from "../features/notificationSlice";
@@ -24,10 +24,12 @@ function Footer() {
     const dispatch = useDispatch();
     const selectedCollection = useSelector((state: RootState) => state.footer.selectedCollection);
     const navigate = useNavigate();
+    const location = useLocation();
     const conversationId = useSelector((state: RootState) => state.footer.conversationId);
     const modelName = useSelector((state: RootState) => state.footer.modelName);
 
     const selectionLocked = Boolean(conversationId);
+    const isHomePage = location.pathname === "/";
 
     const getCollections = async () => {
         setCollectionsLoading(true);
@@ -82,161 +84,215 @@ function Footer() {
         setUserPrompt("");
     }
 
+    const containerClasses = isHomePage 
+        ? "flex flex-col justify-center items-center py-8 px-4 gap-2 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full"
+        : "flex justify-center items-center py-4 px-4 gap-2";
+
     return (
-        <div className="flex justify-center items-center py-4 px-4 gap-2 border-t bg-[#1D2839]">
-            {/* Model Dropdown */}
-            <div className="relative inline-block">
-                <button
-                    onClick={() => !selectionLocked && setmodelListOpen(!modelListOpen)}
-                    className={`bg-blue-500 text-white rounded p-2 truncate ${selectionLocked ? "cursor-not-allowed" : "cursor-pointer"}`}
-                    disabled={selectionLocked}
-                    title={selectionLocked ? "Change model on Home before starting a chat" : undefined}
-                >
-                    <div className="flex gap-1 items-center">
-                        {modelName}
-                        {!selectionLocked && (modelListOpen ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                            </svg>
-                        ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
-                            </svg>
-                        ))}
-                    </div>
-                </button>
-                {!selectionLocked && modelListOpen && (
-                    <div className="absolute bottom-full mb-2 w-64 bg-white shadow-lg rounded-lg border z-10 max-h-64 overflow-y-auto">
-                        <div className="p-2 border-b">
-                            <input
-                                type="text"
-                                placeholder="Search models..."
-                                className="w-full px-2 py-1 border rounded"
-                                value={modelSearch}
-                                onChange={(e) => setModelSearch(e.target.value)}
-                            />
+        <>
+        <div className={containerClasses}>
+            <div>
+                { 
+                    isHomePage && (
+                        <div className="flex flex-col justify-center items-center">
+                            <div className="text-2xl">Welcome Back</div>
+                            <div className="text-xl">Hello</div>
                         </div>
-                        {modelsLoading ? (
-                            <div className="p-2 space-y-2">
-                                <Skeleton variant="rectangular" height={28} />
-                                <Skeleton variant="rectangular" height={28} />
-                                <Skeleton variant="rectangular" height={28} />
+                    )
+                }
+            </div>
+            <div className="flex flex-col w-full max-w-4xl border border-[#18181b] rounded-xl p-4 bg-[#18181b]">
+                <div className="flex items-center gap-2 mb-4">
+                    {/* Upload Button */}
+                    <button 
+                        className="group relative rounded-xl p-3 text-white bg-[#5645ee] cursor-pointer"
+                        onClick={() => setOpen(true)}
+                        title="Upload files"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 transition-transform duration-300 group-hover:rotate-90">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                    </button>
+
+                    {/* Prompt Input */}
+                    <div className="flex-1 relative">
+                        <input
+                            type="text"
+                            placeholder="Ask me anything..."
+                            className="w-full p-3 rounded-xl focus:outline-none text-white placeholder-gray-400 bg-[#36353f]"
+                            value={userPrompt}
+                            onChange={(e) => setUserPrompt(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && checkConversationId()}
+                        />
+                    </div>
+
+                    {/* Send Button */}
+                    <button 
+                        className="group relative rounded-xl p-3 text-white bg-[#5645ee] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={checkConversationId}
+                        disabled={!userPrompt.trim()}
+                        title="Send message"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 transition-transform duration-300 group-hover:translate-x-1">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div className="flex justify-between gap-4">
+                    {/* Model Dropdown */}
+                    <div className="relative flex-1">
+                        <button
+                            onClick={() => !selectionLocked && setmodelListOpen(!modelListOpen)}
+                            className={`w-full text-left text-white rounded-xl p-2 bg-[#5645ee] ${
+                                selectionLocked 
+                                    ? "cursor-not-allowed opacity-60" 
+                                    : "cursor-pointer"
+                            }`}
+                            disabled={selectionLocked}
+                            title={selectionLocked ? "Change model on Home before starting a chat" : undefined}
+                        >
+                            <div className="flex justify-between items-center">
+                                <div className="flex flex-col">
+                                    <span className="text-xs text-white mb-1">Model</span>
+                                    <span className="truncate text-md font-medium font-bold">{modelName || "Select Model"}</span>
+                                </div>
+                                {!selectionLocked && (
+                                    <svg 
+                                        xmlns="http://www.w3.org/2000/svg" 
+                                        fill="none" 
+                                        viewBox="0 0 24 24" 
+                                        strokeWidth={2} 
+                                        stroke="currentColor" 
+                                        className={`w-5 h-5 transition-transform duration-300 ${modelListOpen ? 'rotate-180' : ''}`}
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                    </svg>
+                                )}
                             </div>
-                        ) : (
-                            <ul>
-                                {models
-                                    .filter((m) => m.toLowerCase().includes(modelSearch.toLowerCase()))
-                                    .map((m) => (
-                                        <li
-                                            key={m}
-                                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer truncate"
-                                            onClick={() => { dispatch(setModelName(m)); setmodelListOpen(false); setModelSearch(""); }}
-                                        >
-                                            {m}
-                                        </li>
-                                    ))}
-                                {models.length === 0 && (
-                                    <li className="px-4 py-2 text-gray-500 text-sm">No model available</li>
-                                )}
-                                {models.length > 0 && models.filter((m) => m.toLowerCase().includes(modelSearch.toLowerCase())).length === 0 && (
-                                    <li className="px-4 py-2 text-gray-500 text-sm">No results</li>
-                                )}
-                            </ul>
+                        </button>
+                        {!selectionLocked && modelListOpen && (
+                            <div className="absolute bottom-full mb-2 w-full bg-gray-800 shadow-2xl rounded-xl border border-gray-600 z-10 max-h-64 overflow-hidden backdrop-blur-lg">
+                                <div className="p-3 border-b border-gray-600">
+                                    <input
+                                        type="text"
+                                        placeholder="Search models..."
+                                        className="w-full px-3 py-2 bg-gray-900/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none transition-colors duration-300"
+                                        value={modelSearch}
+                                        onChange={(e) => setModelSearch(e.target.value)}
+                                    />
+                                </div>
+                                <div className="max-h-48 overflow-y-auto">
+                                    {modelsLoading ? (
+                                        <div className="p-3 space-y-2">
+                                            <Skeleton variant="rectangular" height={36} sx={{ bgcolor: 'grey.700', borderRadius: '8px' }} />
+                                            <Skeleton variant="rectangular" height={36} sx={{ bgcolor: 'grey.700', borderRadius: '8px' }} />
+                                            <Skeleton variant="rectangular" height={36} sx={{ bgcolor: 'grey.700', borderRadius: '8px' }} />
+                                        </div>
+                                    ) : (
+                                        <ul>
+                                            {models
+                                                .filter((m) => m.toLowerCase().includes(modelSearch.toLowerCase()))
+                                                .map((m) => (
+                                                    <li
+                                                        key={m}
+                                                        className="px-4 py-3 hover:bg-gray-700/70 cursor-pointer truncate text-white transition-colors duration-200 border-b border-gray-700/50 last:border-b-0"
+                                                        onClick={() => { dispatch(setModelName(m)); setmodelListOpen(false); setModelSearch(""); }}
+                                                    >
+                                                        <span className="font-medium">{m}</span>
+                                                    </li>
+                                                ))}
+                                            {models.length === 0 && (
+                                                <li className="px-4 py-3 text-gray-400 text-sm text-center">No models available</li>
+                                            )}
+                                            {models.length > 0 && models.filter((m) => m.toLowerCase().includes(modelSearch.toLowerCase())).length === 0 && (
+                                                <li className="px-4 py-3 text-gray-400 text-sm text-center">No results found</li>
+                                            )}
+                                        </ul>
+                                    )}
+                                </div>
+                            </div>
                         )}
                     </div>
-                )}
-            </div>
 
-            {/* Collection Dropdown */}
-            <div className="relative inline-block">
-                <button
-                    onClick={() => !selectionLocked && setCollectionOpen(!collectionOpen)}
-                    className={`bg-green-500 text-white rounded p-2 truncate ${selectionLocked ? "cursor-not-allowed" : "cursor-pointer"}`}
-                    disabled={selectionLocked}
-                    title={selectionLocked ? "Change collection on Home before starting a chat" : undefined}
-                >
-                    <div className="flex gap-1 items-center">
-                        {selectedCollection || "Select Collection"}
-                        {!selectionLocked && (collectionOpen ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                            </svg>
-                        ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
-                            </svg>
-                        ))}
-                    </div>
-                </button>
-                {!selectionLocked && collectionOpen && (
-                    <div className="absolute bottom-full mb-2 w-64 bg-white shadow-lg rounded-lg border z-10 max-h-64 overflow-y-auto">
-                        <div className="p-2 border-b">
-                            <input
-                                type="text"
-                                placeholder="Search collections..."
-                                className="w-full px-2 py-1 border rounded"
-                                value={collectionSearch}
-                                onChange={(e) => setCollectionSearch(e.target.value)}
-                            />
-                        </div>
-                        {collectionsLoading ? (
-                            <div className="p-2 space-y-2">
-                                <Skeleton variant="rectangular" height={28} />
-                                <Skeleton variant="rectangular" height={28} />
-                                <Skeleton variant="rectangular" height={28} />
+                    {/* Collection Dropdown */}
+                    <div className="relative flex-1">
+                        <button
+                            onClick={() => !selectionLocked && setCollectionOpen(!collectionOpen)}
+                            className={`w-full text-left text-white rounded-xl p-2 bg-[#5645ee] ${
+                                selectionLocked 
+                                    ? "cursor-not-allowed opacity-60" 
+                                    : "cursor-pointer"
+                            }`}
+                            disabled={selectionLocked}
+                            title={selectionLocked ? "Change collection on Home before starting a chat" : undefined}
+                        >
+                            <div className="flex justify-between items-center">
+                                <div className="flex flex-col">
+                                    <span className="text-xs text-white mb-1">Collection</span>
+                                    <span className="truncate text-md font-medium font-bold">{selectedCollection || "Select Collection"}</span>
+                                </div>
+                                {!selectionLocked && (
+                                    <svg 
+                                        xmlns="http://www.w3.org/2000/svg" 
+                                        fill="none" 
+                                        viewBox="0 0 24 24" 
+                                        strokeWidth={2} 
+                                        stroke="currentColor" 
+                                        className={`w-5 h-5 transition-transform duration-300 ${collectionOpen ? 'rotate-180' : ''}`}
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                    </svg>
+                                )}
                             </div>
-                        ) : (
-                            <ul>
-                                {collections
-                                    .filter((c) => c.toLowerCase().includes(collectionSearch.toLowerCase()))
-                                    .map((c) => (
-                                        <li
-                                            key={c}
-                                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                                            onClick={() => { dispatch(setSelectedCollection(c)); setCollectionOpen(false); setCollectionSearch(""); }}
-                                        >
-                                            {c}
-                                        </li>
-                                    ))}
-                                {collections.length === 0 && (
-                                    <li className="px-4 py-2 text-gray-500 text-sm">No collections available</li>
-                                )}
-                                {collections.length > 0 && collections.filter((c) => c.toLowerCase().includes(collectionSearch.toLowerCase())).length === 0 && (
-                                    <li className="px-4 py-2 text-gray-500 text-sm">No results</li>
-                                )}
-                            </ul>
+                        </button>
+                        {!selectionLocked && collectionOpen && (
+                            <div className="absolute bottom-full mb-2 w-full bg-gray-800 shadow-2xl rounded-xl border border-gray-600 z-10 max-h-64 overflow-hidden backdrop-blur-lg">
+                                <div className="p-3 border-b border-gray-600">
+                                    <input
+                                        type="text"
+                                        placeholder="Search collections..."
+                                        className="w-full px-3 py-2 bg-gray-900/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none transition-colors duration-300"
+                                        value={collectionSearch}
+                                        onChange={(e) => setCollectionSearch(e.target.value)}
+                                    />
+                                </div>
+                                <div className="max-h-48 overflow-y-auto">
+                                    {collectionsLoading ? (
+                                        <div className="p-3 space-y-2">
+                                            <Skeleton variant="rectangular" height={36} sx={{ bgcolor: 'grey.700', borderRadius: '8px' }} />
+                                            <Skeleton variant="rectangular" height={36} sx={{ bgcolor: 'grey.700', borderRadius: '8px' }} />
+                                            <Skeleton variant="rectangular" height={36} sx={{ bgcolor: 'grey.700', borderRadius: '8px' }} />
+                                        </div>
+                                    ) : (
+                                        <ul>
+                                            {collections
+                                                .filter((c) => c.toLowerCase().includes(collectionSearch.toLowerCase()))
+                                                .map((c) => (
+                                                    <li
+                                                        key={c}
+                                                        className="px-4 py-3 hover:bg-gray-700/70 cursor-pointer text-white transition-colors duration-200 border-b border-gray-700/50 last:border-b-0"
+                                                        onClick={() => { dispatch(setSelectedCollection(c)); setCollectionOpen(false); setCollectionSearch(""); }}
+                                                    >
+                                                        <span className="font-medium">{c}</span>
+                                                    </li>
+                                                ))}
+                                            {collections.length === 0 && (
+                                                <li className="px-4 py-3 text-gray-400 text-sm text-center">No collections available</li>
+                                            )}
+                                            {collections.length > 0 && collections.filter((c) => c.toLowerCase().includes(collectionSearch.toLowerCase())).length === 0 && (
+                                                <li className="px-4 py-3 text-gray-400 text-sm text-center">No results found</li>
+                                            )}
+                                        </ul>
+                                    )}
+                                </div>
+                            </div>
                         )}
                     </div>
-                )}
+                </div>
             </div>
-
-            {/* Prompt Input */}
-            <input
-                type="text"
-                placeholder="Enter Prompt"
-                className="flex-1 p-2 rounded border border-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 text-white"
-                value={userPrompt}
-                onChange={(e) => setUserPrompt(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && checkConversationId()}
-            />
-
-            {/* Upload Button */}
-            <button className="bg-purple-500 rounded p-2 text-white cursor-pointer"
-                onClick={() => setOpen(true)}
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-            </button>
-
-            {/* Send Button */}
-            <button className="bg-green-600 rounded p-2 text-white cursor-pointer" onClick={checkConversationId}>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
-                </svg>
-            </button>
-
-            {/* Upload Modal */}
+        </div>
+        {/* Upload Modal */}
             <UploadModal
                 isOpen={open}
                 onClose={() => setOpen(false)}
@@ -245,7 +301,7 @@ function Footer() {
                     dispatch(setSelectedCollection(newName));
                 }}
             />
-        </div>
+        </>
     );
 }
 
