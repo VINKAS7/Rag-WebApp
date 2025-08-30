@@ -15,7 +15,7 @@ const SuccessModal: React.FC = () => {
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="bg-[#36353f] rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
                 <div className="flex items-center mb-4">
                     <div className="flex-shrink-0">
                         <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -23,16 +23,16 @@ const SuccessModal: React.FC = () => {
                         </svg>
                     </div>
                     <div className="ml-3">
-                        <h3 className="text-lg font-medium text-gray-900">Success</h3>
+                        <h3 className="text-lg font-medium text-white">Success</h3>
                     </div>
                 </div>
                 <div className="mt-2">
-                    <p className="text-sm text-gray-500">{successMessage}</p>
+                    <p className="text-sm text-white">{successMessage}</p>
                 </div>
                 <div className="mt-6">
                     <button
                         type="button"
-                        className="w-full inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        className="w-full inline-flex justify-center cursor-pointer px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-0"
                         onClick={handleClose}
                     >
                         OK
