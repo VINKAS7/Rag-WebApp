@@ -7,7 +7,7 @@ import { showError } from "../features/notificationSlice";
 import { PromptTemplateModal } from "./PromptTemplateModal";
 import type { RootState } from "../app/store";
 import { Skeleton } from "@mui/material";
-
+import { MessageSquare } from "lucide-react";
 interface Conversation {
     conversation_summary: string;
     conversation_id: string;
@@ -125,13 +125,13 @@ function SideBar() {
 
     return (
         <>
-            <div className={`bg-[#18181b] text-white flex flex-col border-r border-gray-800 transition-all duration-300 ${isOpen ? "w-64" : "w-16"}`}>
+            <div className={`bg-[#2C2C2E] text-white flex flex-col border-r border-gray-800 transition-all duration-300 ${isOpen ? "w-64" : "w-16"}`}>
                 <div className="flex items-center justify-between p-4 border-b border-gray-800">
                     {isOpen && <h2 className="text-lg font-semibold">History</h2>}
                     <div className="flex justify-center items-center">
                         {isOpen && (
                             <button
-                                className="p-2 hover:bg-[#5645ee] rounded cursor-pointer"
+                                className="p-2 hover:bg-white hover:text-black rounded cursor-pointer"
                                 onClick={() => setIsPromptModalOpen(true)}
                                 title="Prompt Settings"
                             >
@@ -147,7 +147,7 @@ function SideBar() {
                     </div>
                 </div>
                 <div className="p-2 border-b border-gray-800">
-                    <button onClick={handleNewChat} className={`flex items-center gap-3 w-full px-3 py-2 bg-[#5645ee] rounded text-sm font-medium cursor-pointer transition-all ${!isOpen && "justify-center"}`}>
+                    <button onClick={handleNewChat} className={`flex items-center gap-3 w-full px-3 py-2 bg-white rounded text-sm text-black font-medium cursor-pointer transition-all ${!isOpen && "justify-center"}`}>
                         {PlusIcon}
                         {isOpen && "New Chat"}
                     </button>
@@ -159,17 +159,17 @@ function SideBar() {
                             <input
                                 type="text"
                                 placeholder="Search history..."
-                                className="w-full px-3 py-2 rounded focus:outline-none focus:ring-0 bg-[#36353f]"
+                                className="w-full px-3 py-2 text-white rounded focus:outline-none focus:ring-0 bg-[#1A1A1D]"
                                 value={historySearch}
                                 onChange={(e) => setHistorySearch(e.target.value)}
                             />
                         </div>
                         {loading ? (
                             <div className="p-2 space-y-2">
-                                <Skeleton variant="rectangular" height={32} sx={{ bgcolor: "#36353f" }} />
-                                <Skeleton variant="rectangular" height={32} sx={{ bgcolor: "#36353f" }} />
-                                <Skeleton variant="rectangular" height={32} sx={{ bgcolor: "#36353f" }} />
-                                <Skeleton variant="rectangular" height={32} sx={{ bgcolor: "#36353f" }}/>
+                                <Skeleton variant="rectangular" height={32} sx={{ bgcolor: "#1A1A1D" }} />
+                                <Skeleton variant="rectangular" height={32} sx={{ bgcolor: "#1A1A1D" }} />
+                                <Skeleton variant="rectangular" height={32} sx={{ bgcolor: "#1A1A1D" }} />
+                                <Skeleton variant="rectangular" height={32} sx={{ bgcolor: "#1A1A1D" }}/>
                             </div>
                         ) : conversations.length > 0 ? (
                             conversations
@@ -181,12 +181,15 @@ function SideBar() {
                                 .map((conv) => (
                                 <div 
                                     key={conv.conversation_id}
-                                    className={`group flex items-center justify-between rounded-md transition-colors mb-2 bg-[#36353f] ${activeConversationId === conv.conversation_id ? 'bg-[#36353f]' : 'hover:bg-[#5645ee]'}`}
+                                    className={`group flex items-center justify-between rounded-md transition-colors mb-2 bg-[#1A1A1D] ${activeConversationId === conv.conversation_id ? 'bg-white text-black' : 'hover:bg-white hover:text-black'}`}
                                 >
                                     <button
-                                        className="flex-grow flex items-center gap-2 px-3 py-2 text-left text-sm overflow-hidden"
+                                        className="flex-grow flex jsutify-center items-center gap-2 px-3 py-2 text-left text-sm overflow-hidden cursor-pointer"
                                         onClick={() => loadConversation(conv.conversation_id)}
                                     >
+                                        <span>
+                                            <MessageSquare className="w-4 h-4 mx-auto" />
+                                        </span>
                                         <span className="truncate">{conv.conversation_summary}</span>
                                     </button>
                                     {/* Delete button: shows on group hover */}
@@ -195,7 +198,7 @@ function SideBar() {
                                             e.stopPropagation();
                                             handleDeleteConversation(conv.conversation_id);
                                         }}
-                                        className="p-2 mr-1 rounded-md text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                        className="p-2 mr-1 rounded-md text-black hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                                     >
                                         {TrashIcon}
                                     </button>

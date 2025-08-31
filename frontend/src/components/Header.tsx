@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 function Header() {
     const navigate = useNavigate();
     return (
-    <div className="flex justify-center items-center py-4 sticky top-0 z-20 backdrop-blur-md cursor-pointer select-none bg-[#36353f]"
+    <div className="flex justify-center items-center py-4 sticky top-0 z-20 backdrop-blur-md cursor-pointer select-none bg-[#1A1A1D]"
         onClick={() => navigate("/")}
     >
         <span className="relative group mr-3 italic text-3xl leading-[3rem] font-extrabold transition-transform duration-300 hover:scale-110">

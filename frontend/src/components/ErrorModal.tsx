@@ -15,7 +15,7 @@ const ErrorModal: React.FC = () => {
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
-            <div className="bg-[#36353f] rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="bg-[#2C2C2E] rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
                 <div className="flex items-center mb-4">
                     <div className="flex-shrink-0">
                         <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">

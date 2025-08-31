@@ -3,15 +3,13 @@ from docling_core.transforms.chunker.tokenizer.huggingface import HuggingFaceTok
 from docling.chunking import HybridChunker
 from transformers import AutoTokenizer
 from pathlib import Path
-import chromadb
-from .sentence_model_cache import get_embedding_model
+from utils.cache import get_embedding_model, get_chroma_client, get_chroma_collection
 import os
 import uuid
 
-def run_pipeline(input_dir, output_dir, collection_name, model="BAAI/bge-large-en-v1.5"):
-    
+def run_pipeline(input_dir, output_dir, collection_name, model="sentence-transformers/all-MiniLM-L6-v2", batch_size=32):
     huggingface_tokenizer = AutoTokenizer.from_pretrained(model)
-    embedding_model = get_embedding_model(model)
+    embedding_model = get_embedding_model()
     converter = DocumentConverter()
     tokenizer = HuggingFaceTokenizer(
         tokenizer=huggingface_tokenizer,
@@ -21,28 +19,44 @@ def run_pipeline(input_dir, output_dir, collection_name, model="BAAI/bge-large-e
         tokenizer=tokenizer,
         max_tokens=tokenizer.max_tokens
     )
-    data = {
-        "ids": [],
-        "embeddings": [],
-        "documents":[]
-    }
-    client = chromadb.PersistentClient(path=os.path.join(output_dir,"chromadb"))
-    collection = client.get_or_create_collection(
-        name=collection_name,
-        metadata={"hnsw:space": "cosine"}
-    )
+    
+    client = get_chroma_client(os.path.join(output_dir, "chromadb"))
+    collection = get_chroma_collection(client, collection_name)
+    
     folder_path = Path(input_dir)
     files_to_process = list(folder_path.rglob('*.*'))
+    
     for file_path in files_to_process:
-        result = converter.convert(str(file_path))
-        chunks_iter = chunker.chunk(dl_doc=result.document)
-        processed_chunks = list(chunks_iter)
-        for chunk in processed_chunks:
-            data["ids"].append(str(uuid.uuid4()))
-            data["embeddings"].append(embedding_model.encode(chunk.text, normalize_embeddings=True))
-            data["documents"].append(chunk.text)
-    collection.add(
-        ids=data["ids"],
-        embeddings=data["embeddings"],
-        documents=data["documents"]
-    )
+        try:
+            result = converter.convert(str(file_path))
+            chunks_iter = chunker.chunk(dl_doc=result.document)
+            processed_chunks = list(chunks_iter)
+            
+            if not processed_chunks:
+                continue
+            source_type = "url" if file_path.name.startswith("url_") else "file"
+            original_name = file_path.name
+            chunk_texts = [chunk.text for chunk in processed_chunks]
+            embeddings = embedding_model.encode(
+                chunk_texts,
+                batch_size=batch_size,
+                normalize_embeddings=True,
+            )
+            ids = [str(uuid.uuid4()) for _ in chunk_texts]
+            metadatas = [
+                {
+                    "source": original_name,
+                    "source_type": source_type,
+                    "collection": collection_name
+                }
+                for _ in chunk_texts
+            ]
+            collection.add(
+                ids=ids,
+                embeddings=embeddings,
+                documents=chunk_texts,
+                metadatas=metadatas
+            )
+        except Exception as e:
+            print(f"Error processing {file_path}: {str(e)}")
+            continue

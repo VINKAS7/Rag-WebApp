@@ -102,12 +102,12 @@ function Chat() {
     const isFetchingModelResponse = Boolean(lastMessage && lastMessage.model === "Fetching response...");
 
     return (
-        <div className="p-4 flex flex-col space-y-3">
+        <div className="p-10 flex flex-col space-y-3">
             {isBootstrapping && (
                 <div className="flex flex-col gap-2 w-full">
-                    <Skeleton variant="rectangular" height={20} width="60%" />
+                    <Skeleton variant="rectangular" height={20} width="30%" />
                     <Skeleton variant="rectangular" height={20} width="40%" />
-                    <Skeleton variant="rectangular" height={20} width="70%" />
+                    <Skeleton variant="rectangular" height={20} width="50%" />
                 </div>
             )}
             {conversation.map((msg, idx) => {
@@ -117,7 +117,7 @@ function Chat() {
                     <div
                         key={idx}
                         className={`p-3 rounded-xl max-w-[70%] w-fit ${
-                            isUser ? "bg-[#5645ee] text-white self-end ml-auto" : "bg-[#18181b] text-white self-start mr-auto"
+                            isUser ? "bg-white text-black self-end ml-auto" : "bg-[#2C2C2E] text-white self-start mr-auto"
                         }`}
                     >
                         {isModelFetchingPlaceholder ? (

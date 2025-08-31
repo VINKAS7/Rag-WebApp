@@ -8,7 +8,7 @@ import { setChat, setNewConversation, setHistory } from "../features/chatSlice";
 import { showError } from "../features/notificationSlice";
 import UploadModal from "./UploadModal";
 import { Skeleton } from "@mui/material";
-import { Brain, FolderOpen, MessageSquare } from "lucide-react";
+import { Bot, FolderOpen, MessageSquare } from "lucide-react";
 
 function Footer() {
     const [modelListOpen, setmodelListOpen] = useState(false);
@@ -107,7 +107,7 @@ function Footer() {
                             {/* Features */}
                             <div className="grid gap-6 sm:grid-cols-3 max-w-4xl w-full">
                                 {/* Feature 1 */}
-                                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:bg-white/10 transition">
+                                <div className="bg-[#2C2C2E] rounded-2xl p-6 text-center hover:bg-white/10 transition">
                                 <FolderOpen className="w-10 h-10 mx-auto text-indigo-400 mb-4" />
                                 <h3 className="text-lg font-semibold">Collections</h3>
                                 <p className="text-sm text-white mt-2">
@@ -116,8 +116,8 @@ function Footer() {
                                 </div>
 
                                 {/* Feature 2 */}
-                                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:bg-white/10 transition">
-                                <Brain className="w-10 h-10 mx-auto text-purple-400 mb-4" />
+                                <div className="bg-[#2C2C2E] rounded-2xl p-6 text-center hover:bg-white/10 transition">
+                                <Bot className="w-10 h-10 mx-auto text-purple-400 mb-4" />
                                 <h3 className="text-lg font-semibold">Ollama Models</h3>
                                 <p className="text-sm text-white mt-2">
                                     Select from multiple models to generate intelligent responses.
@@ -125,7 +125,7 @@ function Footer() {
                                 </div>
 
                                 {/* Feature 3 */}
-                                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:bg-white/10 transition">
+                                <div className="bg-[#2C2C2E] rounded-2xl p-6 text-center hover:bg-white/10 transition">
                                 <MessageSquare className="w-10 h-10 mx-auto text-pink-400 mb-4" />
                                 <h3 className="text-lg font-semibold">Ask Anything</h3>
                                 <p className="text-sm white mt-2">
@@ -137,15 +137,15 @@ function Footer() {
                     )
                 }
             </div>
-            <div className="flex flex-col w-full max-w-4xl border border-[#18181b] rounded-xl p-4 bg-[#18181b]">
+            <div className="flex flex-col w-full max-w-4xl rounded-xl p-4 bg-[#2C2C2E]">
                 <div className="flex items-center gap-2 mb-4">
                     {/* Upload Button */}
                     <button 
-                        className="group relative rounded-xl p-3 text-white bg-[#5645ee] cursor-pointer"
+                        className="group relative rounded-xl p-3 text-white bg-white cursor-pointer"
                         onClick={() => setOpen(true)}
                         title="Upload files"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 transition-transform duration-300 group-hover:rotate-90">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-black transition-transform duration-300 group-hover:rotate-90">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>
                     </button>
@@ -155,7 +155,7 @@ function Footer() {
                         <input
                             type="text"
                             placeholder="Ask me anything..."
-                            className="w-full p-3 rounded-xl focus:outline-none text-white placeholder-gray-400 bg-[#36353f]"
+                            className="w-full p-3 rounded-xl focus:outline-none text-white placeholder-gray-400 bg-[#1A1A1D]"
                             value={userPrompt}
                             onChange={(e) => setUserPrompt(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && checkConversationId()}
@@ -164,7 +164,7 @@ function Footer() {
 
                     {/* Send Button */}
                     <button 
-                        className="group relative rounded-xl p-3 text-white bg-[#5645ee] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="group relative rounded-xl p-3 bg-white text-black cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={checkConversationId}
                         disabled={!userPrompt.trim()}
                         title="Send message"
@@ -180,18 +180,20 @@ function Footer() {
                     <div className="relative flex-1">
                         <button
                             onClick={() => !selectionLocked && setmodelListOpen(!modelListOpen)}
-                            className={`w-full text-left text-white rounded-xl p-2 bg-[#5645ee] ${
+                            className={`w-full text-left text-black rounded-xl p-2 bg-white ${
                                 selectionLocked 
-                                    ? "cursor-not-allowed opacity-60" 
+                                    ? "cursor-not-allowed opacity-50" 
                                     : "cursor-pointer"
                             }`}
                             disabled={selectionLocked}
                             title={selectionLocked ? "Change model on Home before starting a chat" : undefined}
                         >
                             <div className="flex justify-between items-center">
-                                <div className="flex flex-col">
-                                    <span className="text-xs text-white mb-1">Model</span>
-                                    <span className="truncate text-md font-medium font-bold">{modelName || "Select Model"}</span>
+                                <div className="flex justify-center items-center gap-2">
+                                    <span>
+                                        <Bot className="w-5 h-5 mx-auto text-black" />
+                                    </span>
+                                    <span className="truncate text-md font-lg font-bold">{modelName || "Select Model"}</span>
                                 </div>
                                 {!selectionLocked && (
                                     <svg 
@@ -208,12 +210,12 @@ function Footer() {
                             </div>
                         </button>
                         {!selectionLocked && modelListOpen && (
-                            <div className="absolute bottom-full mb-2 w-full bg-gray-800 shadow-2xl rounded-xl border border-gray-600 z-10 max-h-64 overflow-hidden backdrop-blur-lg">
-                                <div className="p-3 border-b border-gray-600">
+                            <div className="absolute bottom-full mb-2 w-full bg-[#2C2C2E] shadow-2xl rounded-xl z-10 max-h-64 overflow-hidden backdrop-blur-lg">
+                                <div className="p-3">
                                     <input
                                         type="text"
                                         placeholder="Search models..."
-                                        className="w-full px-3 py-2 bg-gray-900/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none transition-colors duration-300"
+                                        className="w-full px-3 py-2 bg-[#1A1A1D] rounded-lg text-white placeholder-gray-400 focus:outline-none transition-colors duration-300"
                                         value={modelSearch}
                                         onChange={(e) => setModelSearch(e.target.value)}
                                     />
@@ -232,7 +234,7 @@ function Footer() {
                                                 .map((m) => (
                                                     <li
                                                         key={m}
-                                                        className="px-4 py-3 hover:bg-gray-700/70 cursor-pointer truncate text-white transition-colors duration-200 border-b border-gray-700/50 last:border-b-0"
+                                                        className="px-4 py-3 hover:bg-white hover:text-black cursor-pointer truncate text-white transition-colors duration-200 last:border-b-0"
                                                         onClick={() => { dispatch(setModelName(m)); setmodelListOpen(false); setModelSearch(""); }}
                                                     >
                                                         <span className="font-medium">{m}</span>
@@ -255,18 +257,20 @@ function Footer() {
                     <div className="relative flex-1">
                         <button
                             onClick={() => !selectionLocked && setCollectionOpen(!collectionOpen)}
-                            className={`w-full text-left text-white rounded-xl p-2 bg-[#5645ee] ${
+                            className={`w-full text-left text-black rounded-xl p-2 bg-white ${
                                 selectionLocked 
-                                    ? "cursor-not-allowed opacity-60" 
+                                    ? "cursor-not-allowed opacity-50" 
                                     : "cursor-pointer"
                             }`}
                             disabled={selectionLocked}
                             title={selectionLocked ? "Change collection on Home before starting a chat" : undefined}
                         >
                             <div className="flex justify-between items-center">
-                                <div className="flex flex-col">
-                                    <span className="text-xs text-white mb-1">Collection</span>
-                                    <span className="truncate text-md font-medium font-bold">{selectedCollection || "Select Collection"}</span>
+                                <div className="flex justify-center items-center gap-2">
+                                    <span>
+                                        <FolderOpen className="w-5 h-5 mx-auto text-black" />
+                                    </span>
+                                    <span className="truncate text-md font-lg font-bold">{selectedCollection || "Select Collection"}</span>
                                 </div>
                                 {!selectionLocked && (
                                     <svg 
@@ -283,12 +287,12 @@ function Footer() {
                             </div>
                         </button>
                         {!selectionLocked && collectionOpen && (
-                            <div className="absolute bottom-full mb-2 w-full bg-gray-800 shadow-2xl rounded-xl border border-gray-600 z-10 max-h-64 overflow-hidden backdrop-blur-lg">
-                                <div className="p-3 border-b border-gray-600">
+                            <div className="absolute bottom-full mb-2 w-full bg-[#2C2C2E] rounded-lg z-10 max-h-64 overflow-hidden backdrop-blur-lg">
+                                <div className="p-3">
                                     <input
                                         type="text"
                                         placeholder="Search collections..."
-                                        className="w-full px-3 py-2 bg-gray-900/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none transition-colors duration-300"
+                                        className="w-full px-3 py-2 bg-[#1A1A1D] rounded-lg text-white placeholder-gray-400 focus:outline-none transition-colors duration-300"
                                         value={collectionSearch}
                                         onChange={(e) => setCollectionSearch(e.target.value)}
                                     />
@@ -307,7 +311,7 @@ function Footer() {
                                                 .map((c) => (
                                                     <li
                                                         key={c}
-                                                        className="px-4 py-3 hover:bg-gray-700/70 cursor-pointer text-white transition-colors duration-200 border-b border-gray-700/50 last:border-b-0"
+                                                        className="px-4 py-3 hover:bg-white hover:text-black cursor-pointer text-white transition-colors duration-200 last:border-b-0"
                                                         onClick={() => { dispatch(setSelectedCollection(c)); setCollectionOpen(false); setCollectionSearch(""); }}
                                                     >
                                                         <span className="font-medium">{c}</span>

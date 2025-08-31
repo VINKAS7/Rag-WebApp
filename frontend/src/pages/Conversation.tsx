@@ -5,7 +5,7 @@ import Footer from "../components/Footer";
 
 function Conversation(){
     return (
-        <div className="flex h-screen overflow-hidden bg-[#36353f]">
+        <div className="flex h-screen overflow-hidden bg-[#1A1A1D]">
             <SideBar />
             <div className="flex flex-col flex-1">
                 <Header />
