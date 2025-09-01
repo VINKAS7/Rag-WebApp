@@ -1,69 +1,128 @@
 # RAG WebApp – Backend (FastAPI)
 
-FastAPI backend that powers the Retrieval-Augmented Generation workflow: file ingestion → chunking/embedding → ChromaDB storage → RAG querying → model inference via Ollama.
+FastAPI backend that powers an advanced **Retrieval-Augmented Generation (RAG)** workflow:  
+File & URL ingestion → Chunking & Embedding → ChromaDB storage → Hybrid RAG querying → Model inference via Ollama.
 
-## Requirements
+---
 
-- Python 3.10+
-- Dependencies from `pyproject.toml`
+## 🚀 Features
 
-## Run
+- **Ingestion Pipeline**: Upload files or scrape URLs, convert to text, chunk, embed with SentenceTransformers, and store in ChromaDB.
+- **Advanced RAG Querying**: Combines context from:
+  - **Document Store** (collection-specific ChromaDB)
+  - **Conversational Context** (conversation-specific ChromaDB)  
+  Results are merged via **Reciprocal Rank Fusion (RRF)** for robust retrieval.
+- **Conversational Memory**:  
+  Stores past Q&A in TinyDB + ChromaDB for contextual follow-ups.
+- **Model Inference**:  
+  Responses generated via **Ollama** models.
+- **Custom Prompt Templates**:  
+  Manage default/custom templates for flexible RAG prompt construction.
+- **Error Handling**:  
+  Safe path validation, fallback handling for missing templates/contexts.
+
+---
+
+## 🛠 Requirements
+
+- **Python 3.10+**
+- Install dependencies:
+
+```bash
+pip install -r requirements.txt
+# or if using poetry/pyproject.toml
+poetry install
+```
+
+---
+
+## ▶️ Run
 
 ```bash
 cd backend
-python -m uvicorn main:app --reload --host 127.0.0.1 --port 3000
+uvicorn main:app --reload --host 127.0.0.1 --port 3000
 ```
 
-CORS is configured for `http://localhost:5173` by default.
+CORS is configured for `*` (all origins) by default.
 
-## Overview
+---
 
-- Ingestion pipeline (`utils/pipeline.py`) converts uploaded docs to chunks, encodes with SentenceTransformers, and stores in ChromaDB per collection
-- Query pipeline (`utils/rag_utils.py`) embeds a user query and retrieves relevant documents from the selected collection
-- Conversations persisted in TinyDB per conversation id; global history and prompt templates saved in `./db`
-- Model responses produced via Ollama (`utils/ollama_utils.py`)
+## 📌 API Endpoints
 
-## Endpoints
+### 📂 Collections / Pipeline
+- `GET /api/get_ollama_models` → List available Ollama models  
+- `GET /api/get_collections` → List collection names  
+- `POST /api/create_collection/{collection_name}`  
+  - **Body**: `multipart/form-data`  
+    - `files`: List of uploaded files  
+    - `urls`: JSON string of URLs (e.g., `["http://example.com"]`)  
+  - **Action**: Ingests files/URLs and builds ChromaDB for the collection  
 
-### Collections / Pipeline
-- `GET /api/get_ollama_models` → list available Ollama models
-- `GET /api/get_collections` → list collection names
-- `POST /api/create_collection/{collectionName}` (multipart files: `files`) → ingest files and build ChromaDB for the collection
+---
 
-### Conversation
-- `POST /conversation/get_response`
-  - body: `{ modelName, prompt, conversation_id, collectionName }`
-  - action: saves user message, retrieves context from Chroma, builds RAG prompt, calls Ollama, saves model response
-- `GET /conversation/get_conversation/{id}` → returns `{ collection_conversation, collectionName, modelName }`
-- `GET /conversation/get_history` → list of `{ conversation_summary, conversation_id, modelName, collectionName }`
-- `DELETE /conversation/delete_conversation/{id}` → deletes conversation metadata and its TinyDB file
+### 💬 Conversation
+- `POST /conversation/get_response`  
+  **Body**:  
+  ```json
+  {
+    "modelName": "llama2",
+    "prompt": "What is RAG?",
+    "conversation_id": "uuid",
+    "collectionName": "my_docs"
+  }
+  ```  
+  Saves user message → retrieves context → builds RAG prompt → calls Ollama → saves response  
 
-### Prompt Templates
-- `GET /conversation/get_all_prompt_templates`
-- `GET /conversation/get_prompt_template/{name}`
-- `POST /conversation/new_prompt_template`
-  - body: `{ template_name, template }` (must include `{context}` and `{question}`)
-  - action: updates in-memory template and persists to TinyDB
-- `POST /conversation/use_default_prompt`
-  - action: switch back to built-in default prompt
-- `GET /conversation/get_active_prompt_mode`
-  - returns `{ mode: 'default' | 'custom' }`
+- `GET /conversation/get_conversation/{uid}`  
+  → Returns `{ collection_conversation, collectionName, modelName }`
 
-## Data Locations
+- `GET /conversation/get_history`  
+  → Returns all `{ conversation_summary, conversation_id, modelName, collectionName }`
 
-- Collections: `./collections/{collectionName}/chromadb` (Chroma persistent client)
-- Per-conversation TinyDB: `./collections/{collectionName}/db/{conversation_id}.json`
-- Global TinyDB:
-  - History: `./db/conversations_history.json`
-  - Prompt templates: `./db/prompt_templates.json`
+- `DELETE /conversation/delete_conversation/{uid}`  
+  → Deletes conversation metadata & TinyDB file  
 
-## Error Handling
+---
 
-- Safe path handling in uploads (rejects paths escaping base dir)
-- Chroma query failures fall back to empty context
-- Template formatting falls back to default if keys are missing
+### 📝 Prompt Templates
+- `GET /conversation/get_all_prompt_templates` → List all templates  
+- `GET /conversation/get_prompt_template/{template_name}` → Get template by name  
+- `POST /conversation/new_prompt_template`  
+  - **Body**: `{ "template_name": "...", "template": "..." }`  
+  - Must include `{context}` and `{question}` placeholders  
+- `DELETE /conversation/delete_prompt_template/{template_name}`  
+- `POST /conversation/use_default_prompt` → Switch back to built-in default  
+- `GET /conversation/get_active_prompt_mode` → `{ mode: 'default' | 'custom' }`
 
-## Notes
+---
 
-- The RAG prompt is built from the current in-memory template; use the prompt endpoints to switch between default and custom modes.
-- Ensure SentenceTransformers model and Ollama models are available on the host.
+## 📂 Data Locations
+
+- **Collections (Documents)**: `./collections/{collectionName}/chromadb`  
+- **Collections (Conversational Context)**: `./collections/{collectionName}/context`  
+- **Per-Conversation TinyDB**: `./collections/{collectionName}/db/{conversation_id}.json`  
+- **Global TinyDB**:  
+  - Conversations history → `./db/conversations_history.json`  
+  - Prompt templates → `./db/prompt_templates.json`  
+
+---
+
+## ⚠️ Notes
+
+- The RAG prompt is built from the current **in-memory template**.  
+- Use prompt endpoints to switch between **default** and **custom** templates.  
+- Ensure:
+  - SentenceTransformers model (`all-MiniLM-L6-v2` by default) is available.  
+  - Necessary **Ollama models** are installed on the host machine.  
+
+---
+
+## 📸 Example Workflow
+
+1. Upload PDFs or scrape URLs into a **collection**.  
+2. Start a **conversation** with a query.  
+3. System retrieves context from both:
+   - Your uploaded docs
+   - Past conversation history  
+4. Combines results (RRF), builds RAG prompt, and queries an Ollama model.  
+5. Answer is saved + contextually available for follow-ups.  
