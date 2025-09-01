@@ -4,10 +4,7 @@ A full-stack Retrieval-Augmented Generation application. The frontend (React + T
 
 ---
 
-<video width="600" controls>
-  <source src="output.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+▶️ [Watch Demo Video](media/demo.mp4)
 
 ---
 
