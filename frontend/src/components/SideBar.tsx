@@ -54,7 +54,6 @@ function SideBar() {
     }, [activeConversationId]);
 
     useEffect(() => {
-        // Only fetch history when message is complete (not during streaming)
         if (lastMessage && lastMessage.model && !isStreaming) {
             fetchHistory();
         }
@@ -198,9 +197,9 @@ function SideBar() {
                                         {/* Show loader animation if this conversation is currently streaming */}
                                         {isStreaming && activeConversationId === conv.conversation_id && (
                                             <div className="flex gap-1 ml-2">
-                                                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce"></div>
-                                                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                                                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                                                <div className="w-1 h-1 bg-black rounded-full animate-bounce"></div>
+                                                <div className="w-1 h-1 bg-black rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                                                <div className="w-1 h-1 bg-black rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                                             </div>
                                         )}
                                     </button>

@@ -61,12 +61,9 @@ function Chat() {
                 const { done, value } = await reader.read();
             
                 if (done) {
-                    // Stream ended - check if we got completion signal
                     if (!isComplete && accumulatedResponse) {
-                        // Stream ended without completion signal, but we have content
                         dispatch(updateLastModelMessage({ model: accumulatedResponse }));
                     }
-                    // Always set streaming to false when done
                     dispatch(setIsStreaming(false));
                     break;
                 }
@@ -89,7 +86,6 @@ function Chat() {
                                 } else {
                                     dispatch(updateLastModelMessage({ model: accumulatedResponse }));
                                 }
-                                // Set streaming to false when complete
                                 dispatch(setIsStreaming(false));
                                 return;
                             } else if (jsonData.status === 'error') {
@@ -188,9 +184,9 @@ function Chat() {
                             <div className="flex items-center gap-2">
                                 <div className="animate-pulse">Thinking...</div>
                                 <div className="flex gap-1">
-                                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce"></div>
+                                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                                 </div>
                             </div>
                         ) : (
