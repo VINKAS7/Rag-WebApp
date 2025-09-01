@@ -1,7 +1,7 @@
 import type { RootState } from "../app/store";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setChat, setNewConversation, updateLastModelMessage, setHistory } from "../features/chatSlice";
+import { setChat, setNewConversation, updateLastModelMessage, setHistory, setIsStreaming } from "../features/chatSlice";
 import { setConversationId, setModelName, setSelectedCollection } from "../features/footerSlice";
 import { showError } from "../features/notificationSlice";
 import { useLocation, useParams } from "react-router-dom";
@@ -13,10 +13,10 @@ function Chat() {
     const { id: conversationIdFromUrl } = useParams<{ id: string }>();
     const conversation = useSelector((state: RootState) => state.chat?.chats ?? []);
     const newConversation = useSelector((state: RootState) => state.chat.newConversation);
+    const isStreaming = useSelector((state: RootState) => state.chat.isStreaming);
     const { selectedCollection, modelName } = useSelector((state: RootState) => state.footer);
     const lastMessage = conversation.length > 0 ? conversation[conversation.length - 1] : null;
     const [isBootstrapping, setIsBootstrapping] = useState(false);
-    const [isStreaming, setIsStreaming] = useState(false);
 
     function isPlaceholderSelection(value?: string | null) {
         if (!value) return true;
@@ -29,7 +29,7 @@ function Chat() {
             return;
         }
 
-        setIsStreaming(true);
+        dispatch(setIsStreaming(true));
         dispatch(setChat({ model: "" }));
 
         try {
@@ -59,7 +59,7 @@ function Chat() {
 
             while (true) {
                 const { done, value } = await reader.read();
-                
+               
                 if (done) {
                     // Stream ended - check if we got completion signal
                     if (!isComplete && accumulatedResponse) {
@@ -68,13 +68,15 @@ function Chat() {
                     }
                     break;
                 }
+
                 const chunk = decoder.decode(value, { stream: true });
                 const lines = chunk.split('\n');
+
                 for (const line of lines) {
                     if (line.startsWith('data: ') && line.length > 6) {
                         try {
                             const jsonData = JSON.parse(line.slice(6));
-                            
+                           
                             if (jsonData.status === 'streaming' && jsonData.chunk) {
                                 accumulatedResponse += jsonData.chunk;
                                 dispatch(updateLastModelMessage({ model: accumulatedResponse }));
@@ -103,7 +105,7 @@ function Chat() {
             dispatch(updateLastModelMessage({ model: "Error: Failed to get a response." }));
             dispatch(showError("Failed to get a response from the model. Please try again."));
         } finally {
-            setIsStreaming(false);
+            dispatch(setIsStreaming(false));
         }
     };
 

@@ -8,12 +8,14 @@ type ChatMessage = {
 
 interface ChatState {
     chats: ChatMessage[];
-    newConversation: boolean
+    newConversation: boolean;
+    isStreaming: boolean;
 }
 
 const initialState: ChatState = {
     chats: [],
-    newConversation: false
+    newConversation: false,
+    isStreaming: false
 };
 
 export const chatSlice = createSlice({
@@ -34,9 +36,12 @@ export const chatSlice = createSlice({
         },
         setNewConversation: (state, action) => {
             state.newConversation = action.payload;
+        },
+        setIsStreaming: (state, action: PayloadAction<boolean>) => {
+            state.isStreaming = action.payload;
         }
     }
 });
 
-export const {setChat, setHistory, setNewConversation, updateLastModelMessage} = chatSlice.actions;
+export const { setChat, setHistory, setNewConversation, updateLastModelMessage, setIsStreaming } = chatSlice.actions;
 export default chatSlice.reducer;

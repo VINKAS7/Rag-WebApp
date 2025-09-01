@@ -8,10 +8,12 @@ import { PromptTemplateModal } from "./PromptTemplateModal";
 import type { RootState } from "../app/store";
 import { Skeleton } from "@mui/material";
 import { MessageSquare } from "lucide-react";
+
 interface Conversation {
     conversation_summary: string;
     conversation_id: string;
 }
+
 function SideBar() {
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [isOpen, setIsOpen] = useState(true);
@@ -23,6 +25,7 @@ function SideBar() {
     const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
 
     const chatMessages = useSelector((state: RootState) => state.chat.chats);
+    const isStreaming = useSelector((state: RootState) => state.chat.isStreaming);
     const lastMessage = chatMessages.length > 0 ? chatMessages[chatMessages.length - 1] : null;
 
     const fetchHistory = async () => {
@@ -179,21 +182,30 @@ function SideBar() {
                                         .includes(historySearch.toLowerCase())
                                 )
                                 .map((conv) => (
-                                <div 
+                                <div
                                     key={conv.conversation_id}
                                     className={`group flex items-center justify-between rounded-md transition-colors mb-2 bg-[#1A1A1D] ${activeConversationId === conv.conversation_id ? 'bg-white text-black' : 'hover:bg-white hover:text-black'}`}
                                 >
                                     <button
-                                        className="flex-grow flex jsutify-center items-center gap-2 px-3 py-2 text-left text-sm overflow-hidden cursor-pointer"
+                                        className="flex-grow flex justify-center items-center gap-2 px-3 py-2 text-left text-sm overflow-hidden cursor-pointer"
                                         onClick={() => loadConversation(conv.conversation_id)}
                                     >
                                         <span>
                                             <MessageSquare className="w-4 h-4 mx-auto" />
                                         </span>
-                                        <span className="truncate">{conv.conversation_summary}</span>
+                                        <span className="truncate flex-grow text-left">{conv.conversation_summary}</span>
+                                        {/* Show loader animation if this conversation is currently streaming */}
+                                        {isStreaming && activeConversationId === conv.conversation_id && (
+                                            <div className="flex gap-1 ml-2">
+                                                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce"></div>
+                                                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                                                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                                            </div>
+                                        )}
                                     </button>
+
                                     {/* Delete button: shows on group hover */}
-                                    <button 
+                                    <button
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             handleDeleteConversation(conv.conversation_id);
