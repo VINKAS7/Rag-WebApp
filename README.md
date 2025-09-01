@@ -4,6 +4,10 @@ A full-stack Retrieval-Augmented Generation application. The frontend (React + T
 
 ---
 
+https://github.com/user-attachments/assets/015f1c5c-038e-469c-a2e9-2934f65a706c
+
+---
+
 ## ✨ Highlights
 
 - **Advanced RAG Pipeline**: Combines context from uploaded documents and past conversation history using Reciprocal Rank Fusion (RRF) for highly relevant answers.
