@@ -7,7 +7,7 @@ A full-stack Retrieval-Augmented Generation application. The frontend (React + T
 ## ✨ Highlights
 
 - **Advanced RAG Pipeline**: Combines context from uploaded documents and past conversation history using Reciprocal Rank Fusion (RRF) for highly relevant answers.
-- **Flexible Data Ingestion**: Create vector collections by uploading files (PDFs, DOCX, etc.) or scraping content directly from URLs.
+- **Flexible Data Ingestion**: Create vector collections by uploading files (PDF, DOCX, PPTX, XLSX, WAV, MP3, images (PNG, TIFF, JPEG, ...)) or scraping content directly from URLs.
 - **Conversational Memory**: Each chat maintains its own context, allowing for meaningful follow-up questions.
 - **Modern Chat UI**: Responsive interface with conversation history, model/collection selection, and real-time updates.
 - **Prompt Template Editor**: Easily switch between a default prompt and custom-built templates. Save new templates with required placeholders.
