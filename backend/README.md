@@ -29,9 +29,8 @@ File & URL ingestion → Chunking & Embedding → ChromaDB storage → Hybrid RA
 - Install dependencies:
 
 ```bash
-pip install -r requirements.txt
-# or if using poetry/pyproject.toml
-poetry install
+# Using uv (recommended for speed)
+uv pip install -r requirements.txt
 ```
 
 ---
