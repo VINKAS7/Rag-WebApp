@@ -4,6 +4,13 @@ A full-stack Retrieval-Augmented Generation application. The frontend (React + T
 
 ---
 
+<video width="600" controls>
+  <source src="output.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+---
+
 ## ✨ Highlights
 
 - **Advanced RAG Pipeline**: Combines context from uploaded documents and past conversation history using Reciprocal Rank Fusion (RRF) for highly relevant answers.
