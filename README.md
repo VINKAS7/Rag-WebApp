@@ -1,130 +1,165 @@
 # RAG WebApp
 
-A full-stack Retrieval-Augmented Generation application. The frontend (React + TypeScript + Vite) provides a clean chat interface, collection management, and a prompt template editor. The backend (FastAPI) ingests documents, builds a ChromaDB vector store, retrieves relevant context for user prompts, and generates responses using Ollama.
+A full-stack Retrieval-Augmented Generation application. The frontend (React + TypeScript) provides a clean chat interface, collection management, and a prompt editor. The backend (FastAPI) ingests documents and URLs, builds a ChromaDB vector store, and uses an advanced RAG pipeline with conversational memory to generate responses using Ollama.
 
-## Highlights
+---
 
-- Modern, responsive chat UI with conversation history
-- Upload documents to build per-collection vector stores (ChromaDB)
-- Choose a model and collection, then chat with RAG-augmented answers
-- Prompt Template Editor: toggle default vs custom templates, drag placeholders, save and apply templates instantly
-- Route hydration: direct navigation to `/conversation/{id}` loads state automatically
+## ✨ Highlights
 
-## Architecture
+- **Advanced RAG Pipeline**: Combines context from uploaded documents and past conversation history using Reciprocal Rank Fusion (RRF) for highly relevant answers.
+- **Flexible Data Ingestion**: Create vector collections by uploading files (PDFs, DOCX, etc.) or scraping content directly from URLs.
+- **Conversational Memory**: Each chat maintains its own context, allowing for meaningful follow-up questions.
+- **Modern Chat UI**: Responsive interface with conversation history, model/collection selection, and real-time updates.
+- **Prompt Template Editor**: Easily switch between a default prompt and custom-built templates. Save new templates with required placeholders.
+- **Route Hydration**: Direct navigation to a conversation URL (`/conversation/{id}`) automatically loads its chat history and state.
 
-- Frontend: React + TypeScript + Vite
-  - State: Redux Toolkit
-  - Styling: Tailwind CSS utilities (configured in Vite)
-- Backend: FastAPI
-  - Ingestion: `docling` + `sentence-transformers` (embeddings) + `ChromaDB`
-  - Storage: Chroma persistent store per collection, TinyDB for conversation history and prompt templates
-  - LLM Inference: Ollama
+---
+
+## 🏛️ Architecture
+
+The application consists of a **React frontend** and a **FastAPI backend**.  
+The backend's core is its advanced RAG pipeline.
+
+- **Frontend: React + TypeScript + Vite**
+  - State Management: Redux Toolkit
+  - Styling: Tailwind CSS
+
+- **Backend: FastAPI**
+  - Ingestion: docling (document parsing), sentence-transformers (embeddings), httpx (URL scraping).
+  - Vector Storage: ChromaDB (separate persistent stores for documents and conversational context).
+  - Metadata Storage: TinyDB (conversation history and prompt templates).
+  - LLM Inference: Ollama.
+
+### 🔄 How It Works
+
+When a user sends a prompt, the backend executes a hybrid retrieval strategy:
+
+1. **Dual Retrieval**:  
+   - Queries the **Document Store** (ChromaDB for the selected collection).  
+   - Queries the **Conversational Context** (ChromaDB for the current chat session).  
+
+2. **Fusion & Ranking (RRF)**:  
+   - Merges results from both retrievals and re-ranks using Reciprocal Rank Fusion.  
+
+3. **Generation**:  
+   - Injects top-ranked context into a prompt template.  
+   - Sends the final prompt to an Ollama model for response generation.  
 
 ```
-User → Frontend (React) → Backend (FastAPI) →
-  ↳ Query: ChromaDB (retrieve context) + Ollama (generate) → Response → Frontend
-  ↳ Ingest: Files → Chunk + Embed → ChromaDB (Persistent)
-  ↳ Persist: TinyDB (history, templates)
+User → Frontend (React) → Backend (FastAPI)
+  ↳ Query:  ChromaDB (Docs) + ChromaDB (Conv. Context) → RRF → Ollama → Response
+  ↳ Ingest: Files/URLs → Chunk + Embed → ChromaDB (Persistent)
+  ↳ Persist: TinyDB (History, Templates)
 ```
 
-## Repository Structure
+---
 
-- `frontend/`
-  - React app (components, pages, Redux slices, assets)
-  - See `frontend/README.md` for detailed UI usage
-- `backend/`
-  - FastAPI app, routers, utils, ingestion and RAG helpers
-  - See `backend/README.md` for endpoints and data flow
-- `collections/`
-  - Created at runtime. Each collection stores its ChromaDB and per-conversation TinyDB files
-- `backend/db/`
-  - Global TinyDB stores for conversation history and prompt templates
+## 📁 Repository Structure
 
-## Prerequisites
+- **frontend/** → React application (see `frontend/README.md` for UI docs).  
+- **backend/** → FastAPI application (see `backend/README.md` for API docs).  
+- **collections/** → Created at runtime; holds:  
+  - Document vector store (`chromadb`)  
+  - Conversational context (`context`)  
+  - Per-conversation logs (`db`)  
+- **backend/db/** → Global TinyDB stores for:  
+  - `conversations_history.json` (conversation metadata)  
+  - `prompt_templates.json` (saved templates)  
 
-- Node.js 18+
-- Python 3.10+
-- Ollama installed with desired models available locally
+---
 
-## Setup and Run
+## ⚙️ Prerequisites
 
-1) Backend
+- Node.js **v18+**
+- Python **v3.10+**
+- [Ollama](https://ollama.ai/) installed with desired models (e.g., `ollama pull llama3`)
 
-- Install Python dependencies as defined in `backend/pyproject.toml` (e.g., with `uv` or `pip`)
-- Start FastAPI
+---
+
+## 🚀 Setup and Run
+
+### 1. Backend
 
 ```bash
+# Navigate to backend
 cd backend
-python -m uvicorn main:app --reload --host 127.0.0.1 --port 3000
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Start FastAPI server
+uvicorn main:app --reload --host 127.0.0.1 --port 3000
 ```
 
-2) Frontend
+Backend runs at → [http://localhost:3000](http://localhost:3000)
+
+---
+
+### 2. Frontend
 
 ```bash
+# Navigate to frontend
 cd frontend
+
+# Install dependencies
 npm install
+
+# Start dev server
 npm run dev
 ```
 
-- Frontend runs on `http://localhost:5173`
-- Backend runs on `http://localhost:3000`
+Frontend runs at → [http://localhost:5173](http://localhost:5173)
 
-## Core Flows
+---
 
-- Create a collection
-  - Click Upload in the footer, select files, name the collection, submit
-  - The backend chunks, embeds, and stores vectors in Chroma; the new collection appears in the list
+## ▶️ Core Flows
 
-- Start a conversation
-  - On Home, select a model and a collection
-  - Enter your prompt and Send → app navigates to `/conversation/{id}` and persists history
+### 🔹 Create a Collection
+- Click **Upload** → Select files or paste URLs → Name the collection → Submit.  
+- Backend processes data → Collection becomes available.
 
-- Continue a conversation
-  - Type another prompt and Send; messages render immediately and the model response follows
+### 🔹 Start a Conversation
+- Select **Model** + **Collection** → Enter a prompt.  
+- App navigates to unique conversation URL.
 
-- Manage templates
-  - Open the Prompt Settings (sidebar)
-  - Select "Default prompt" to use the built-in template, or choose a saved template to apply it
-  - Create new templates (must include `{context}` and `{question}`)
+### 🔹 Continue a Conversation
+- Context retrieved from documents + conversation history.  
+- Follow-up questions remain contextual.
 
-## Backend API (summary)
+### 🔹 Manage Prompt Templates
+- Open **Prompt Settings** → Choose default/custom template.  
+- Create/edit templates in the editor (`{context}` and `{question}` required).
 
-- Collections
-  - `GET /api/get_ollama_models` → list Ollama models
-  - `GET /api/get_collections` → list collections
-  - `POST /api/create_collection/{collectionName}` → ingest files (multipart: `files`)
-- Conversation
-  - `POST /conversation/get_response` → RAG + Ollama response
-  - `GET /conversation/get_conversation/{id}` → conversation history and metadata
-  - `GET /conversation/get_history` → global conversation history
-  - `DELETE /conversation/delete_conversation/{id}` → delete a conversation
-- Prompt templates
-  - `GET /conversation/get_all_prompt_templates`
-  - `GET /conversation/get_prompt_template/{name}`
-  - `POST /conversation/new_prompt_template` → save/apply custom template
-  - `POST /conversation/use_default_prompt` → switch to built-in default
-  - `GET /conversation/get_active_prompt_mode` → `default` or `custom`
+---
 
-Refer to `backend/README.md` for details and request bodies.
+## 🔌 Backend API Summary
 
-## Storage Layout
+### Collections
+- `GET /api/get_ollama_models` → List available Ollama models.  
+- `GET /api/get_collections` → List all collections.  
+- `POST /api/create_collection/{collection_name}` → Ingest files/URLs.  
 
-- `collections/{collectionName}/chromadb` → Chroma persistent client
-- `collections/{collectionName}/db/{conversation_id}.json` → per-conversation TinyDB
-- `backend/db/conversations_history.json` → global history TinyDB
-- `backend/db/prompt_templates.json` → global prompt templates TinyDB
+### Conversation
+- `POST /conversation/get_response` → Get a RAG-powered response.  
+- `GET /conversation/get_conversation/{uid}` → Get a conversation’s history.  
+- `GET /conversation/get_history` → Get all conversations.  
+- `DELETE /conversation/delete_conversation/{uid}` → Delete a conversation.  
 
-## Troubleshooting
+### Prompt Templates
+- `GET /conversation/get_all_prompt_templates`  
+- `POST /conversation/new_prompt_template`  
+- `DELETE /conversation/delete_prompt_template/{template_name}`  
+- `POST /conversation/use_default_prompt`  
+- `GET /conversation/get_active_prompt_mode`  
 
-- Blank chat on direct route
-  - Ensure the backend is running and the conversation id exists
-- No models/collections
-  - Verify Ollama and ingestion pipeline are correctly installed and the endpoints return data
-- Upload errors
-  - Check backend write permissions and validate file types are supported by the ingestion pipeline
-- Slow responses
-  - Embedding and retrieval may be compute-heavy; verify model availability and consider lighter embedding models
+(See `backend/README.md` for detailed request/response examples.)
 
-## License
+---
 
-This repository is provided as-is for educational and prototyping purposes.
+## 💾 Storage Layout
+
+- `collections/{collectionName}/chromadb` → Vector store (documents).  
+- `collections/{collectionName}/context` → Vector store (conversational memory).  
+- `collections/{collectionName}/db/{conversation_id}.json` → TinyDB log (per conversation).  
+- `backend/db/conversations_history.json` → Global conversation metadata.  
+- `backend/db/prompt_templates.json` → Global saved templates.  
