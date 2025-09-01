@@ -35,6 +35,16 @@ File & URL ingestion → Chunking & Embedding → ChromaDB storage → Hybrid RA
 
 ---
 
+## ⚡️ A Note on Models
+
+- The backend currently uses a smaller SentenceTransformers embedding model (**all-MiniLM-L6-v2**) to keep things lightweight and runnable on modest hardware.
+
+- For better semantic retrieval and context quality, you can swap in a larger embedding model (e.g., **all-mpnet-base-v2**, **bge-large-en**).
+
+- Similarly, the response quality depends on the Ollama model you select. Using stronger models (e.g., **llama2**, **mistral**, or newer fine-tuned models) will yield more coherent and accurate answers.
+
+---
+
 ## 🛠 Requirements
 
 - **Python 3.10+**
