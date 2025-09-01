@@ -3,10 +3,12 @@ import uuid
 import asyncio
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
-from utils.ollama_utils import ollama_response
+from utils.ollama_utils import ollama_response_stream
 from utils.tinydb_utils import TinyDB_Utils, TinyDB_Utils_Global, Tiny_DB_Global_Prompt
 from utils.rag_utils import query_chroma_ranked, query_context_ranked, reciprocal_rank_fusion
 from utils.cache import get_embedding_model, get_chroma_client, get_chroma_collection
+import json
+from fastapi.responses import StreamingResponse
 
 router = APIRouter(
     prefix="/conversation",
@@ -55,10 +57,38 @@ def save_previous_context(context: str, collection_name: str, conversation_id: s
         documents=context
     )
 
-@router.post("/get_response")
-async def get_response(prompt: UserPrompt):
+async def generate_stream_response(modelName, user_prompt, conversation_id, collectionName, db):
+    """Async generator for FastAPI streaming"""
+    full_response = ""
+    
+    try:
+        # Generate the stream
+        for chunk in ollama_response_stream(modelName, user_prompt):
+            full_response += chunk
+            # Send each chunk as JSON
+            yield f"data: {json.dumps({'chunk': chunk, 'status': 'streaming'})}\n\n"
+        
+        # Save the complete response to database
+        await asyncio.to_thread(db.save_conversation, model=full_response)
+        await asyncio.to_thread(
+            save_previous_context,
+            user_prompt.strip() + "\n" + full_response.strip(),
+            collectionName,
+            conversation_id
+        )
+        
+        # Send completion signal
+        yield f"data: {json.dumps({'status': 'complete', 'full_response': full_response})}\n\n"
+        
+    except Exception as e:
+        yield f"data: {json.dumps({'status': 'error', 'error': str(e)})}\n\n"
+
+@router.post("/get_response_stream")
+async def get_response_stream(prompt: UserPrompt):
+    """Streaming endpoint using Server-Sent Events"""
     global_db = TinyDB_Utils_Global()
     history = await asyncio.to_thread(global_db.get_uid_history, prompt.conversation_id)
+
     if not history:
         summary = prompt.prompt[:50] + "..." if len(prompt.prompt) > 50 else prompt.prompt
         await asyncio.to_thread(
@@ -90,25 +120,20 @@ async def get_response(prompt: UserPrompt):
         )
 
         chroma_ranked, context_ranked = await asyncio.gather(chroma_task, context_task)
-
         top_docs = reciprocal_rank_fusion([chroma_ranked, context_ranked], k=60, top_k=5)
         fused_context = "\n".join(top_docs)
 
     augmented_prompt = generate_rag_prompt(fused_context, prompt.prompt)
 
-    try:
-        response = await asyncio.to_thread(ollama_response, prompt.modelName, augmented_prompt)
-        response = response.strip()
-        await asyncio.to_thread(db.save_conversation, model=response)
-        await asyncio.to_thread(
-            save_previous_context,
-            prompt.prompt.strip() + "\n" + response.strip(),
-            prompt.collectionName,
-            prompt.conversation_id
-        )
-        return {"status": "success", "model_response": response}
-    except Exception:
-        return {"status": "failed"}
+    return StreamingResponse(
+        generate_stream_response(prompt.modelName, augmented_prompt, prompt.conversation_id, prompt.collectionName, db),
+        media_type="text/plain",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Content-Type": "text/event-stream",
+        }
+    )
 
 @router.get("/get_conversation/{uid}")
 async def get_conversation(uid: str):

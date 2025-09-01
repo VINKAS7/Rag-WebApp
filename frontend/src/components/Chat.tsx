@@ -16,12 +16,96 @@ function Chat() {
     const { selectedCollection, modelName } = useSelector((state: RootState) => state.footer);
     const lastMessage = conversation.length > 0 ? conversation[conversation.length - 1] : null;
     const [isBootstrapping, setIsBootstrapping] = useState(false);
+    const [isStreaming, setIsStreaming] = useState(false);
 
     function isPlaceholderSelection(value?: string | null) {
         if (!value) return true;
         const v = value.toLowerCase();
         return v === "select model" || v === "select collection";
     }
+
+    const streamResponse = async (userPrompt: string) => {
+        if (isPlaceholderSelection(modelName) || isPlaceholderSelection(selectedCollection) || !conversationIdFromUrl) {
+            return;
+        }
+
+        setIsStreaming(true);
+        dispatch(setChat({ model: "" }));
+
+        try {
+            const response = await fetch("http://localhost:3000/conversation/get_response_stream", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    "modelName": modelName,
+                    "prompt": userPrompt,
+                    "conversation_id": conversationIdFromUrl,
+                    "collectionName": selectedCollection
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const reader = response.body?.getReader();
+            if (!reader) {
+                throw new Error("No reader available");
+            }
+
+            const decoder = new TextDecoder();
+            let accumulatedResponse = "";
+            let isComplete = false;
+
+            while (true) {
+                const { done, value } = await reader.read();
+                
+                if (done) {
+                    // Stream ended - check if we got completion signal
+                    if (!isComplete && accumulatedResponse) {
+                        // Stream ended without completion signal, but we have content
+                        dispatch(updateLastModelMessage({ model: accumulatedResponse }));
+                    }
+                    break;
+                }
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n');
+                for (const line of lines) {
+                    if (line.startsWith('data: ') && line.length > 6) {
+                        try {
+                            const jsonData = JSON.parse(line.slice(6));
+                            
+                            if (jsonData.status === 'streaming' && jsonData.chunk) {
+                                accumulatedResponse += jsonData.chunk;
+                                dispatch(updateLastModelMessage({ model: accumulatedResponse }));
+                            } else if (jsonData.status === 'complete') {
+                                isComplete = true;
+                                if (jsonData.full_response) {
+                                    dispatch(updateLastModelMessage({ model: jsonData.full_response }));
+                                } else {
+                                    dispatch(updateLastModelMessage({ model: accumulatedResponse }));
+                                }
+                                return;
+                            } else if (jsonData.status === 'error') {
+                                dispatch(updateLastModelMessage({ model: `Error: ${jsonData.error}` }));
+                                dispatch(showError("Failed to get a response from the model. Please try again."));
+                                return;
+                            }
+                        } catch (parseError) {
+                            console.warn("Failed to parse streaming data:", line);
+                        }
+                    }
+                }
+            }
+
+        } catch (error) {
+            console.error("Streaming error:", error);
+            dispatch(updateLastModelMessage({ model: "Error: Failed to get a response." }));
+            dispatch(showError("Failed to get a response from the model. Please try again."));
+        } finally {
+            setIsStreaming(false);
+        }
+    };
 
     useEffect(() => {
         const bootstrapConversation = async () => {
@@ -66,40 +150,12 @@ function Chat() {
     }, [dispatch, location.state, newConversation]);
 
     useEffect(() => {
-        const fetchResponse = async (userPrompt: string) => {
-            if (isPlaceholderSelection(modelName) || isPlaceholderSelection(selectedCollection) || !conversationIdFromUrl) {
-                return;
-            }
-
-            dispatch(setChat({ model: "Fetching response..." }));
-
-            const response = await fetch("http://localhost:3000/conversation/get_response", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    "modelName": modelName,
-                    "prompt": userPrompt,
-                    "conversation_id": conversationIdFromUrl,
-                    "collectionName": selectedCollection
-                })
-            });
-
-            const data = await response.json();
-
-            if (data.status === "success") {
-                dispatch(updateLastModelMessage({ model: data.model_response }));
-            } else {
-                dispatch(updateLastModelMessage({ model: "Error: Failed to get a response." }));
-                dispatch(showError("Failed to get a response from the model. Please try again."));
-            }
-        };
-
-        if (lastMessage && lastMessage.user && !lastMessage.model) {
-            fetchResponse(lastMessage.user);
+        if (lastMessage && lastMessage.user && !lastMessage.model && !isStreaming) {
+            streamResponse(lastMessage.user);
         }
-    }, [lastMessage, modelName, selectedCollection, conversationIdFromUrl, dispatch]);
+    }, [lastMessage, modelName, selectedCollection, conversationIdFromUrl, isStreaming]);
 
-    const isFetchingModelResponse = Boolean(lastMessage && lastMessage.model === "Fetching response...");
+    const isFetchingModelResponse = isStreaming || Boolean(lastMessage && lastMessage.model === "");
 
     return (
         <div className="p-10 flex flex-col space-y-3">
@@ -111,8 +167,9 @@ function Chat() {
                 </div>
             )}
             {conversation.map((msg, idx) => {
-                const isModelFetchingPlaceholder = msg.model === "Fetching response...";
+                const isModelStreaming = isStreaming && idx === conversation.length - 1 && !msg.user;
                 const isUser = Boolean(msg.user);
+
                 return (
                     <div
                         key={idx}
@@ -120,14 +177,22 @@ function Chat() {
                             isUser ? "bg-white text-black self-end ml-auto" : "bg-[#2C2C2E] text-white self-start mr-auto"
                         }`}
                     >
-                        {isModelFetchingPlaceholder ? (
-                            <div className="flex flex-col gap-2 w-64">
-                                <Skeleton variant="text" width="90%" />
-                                <Skeleton variant="text" width="75%" />
-                                <Skeleton variant="text" width="60%" />
+                        {isModelStreaming && (!msg.model || msg.model === "") ? (
+                            <div className="flex items-center gap-2">
+                                <div className="animate-pulse">Thinking...</div>
+                                <div className="flex gap-1">
+                                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                                </div>
                             </div>
                         ) : (
-                            msg.user || msg.model
+                            <div className="whitespace-pre-wrap">
+                                {msg.user || msg.model}
+                                {isModelStreaming && msg.model && (
+                                    <span className="animate-pulse">|</span>
+                                )}
+                            </div>
                         )}
                     </div>
                 );
