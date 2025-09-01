@@ -31,7 +31,7 @@ File & URL ingestion → Chunking & Embedding → ChromaDB storage → Hybrid RA
 
 - These advanced features are not enabled by default as they are extremely memory-heavy. Running them locally requires a high-end machine with a powerful GPU and a large amount of VRAM.
 
-- If you have the necessary hardware and wish to implement these capabilities, you can modify the ingestion pipeline. For more details, please refer to the official [Docling Enrichments Documentation]("https://docling-project.github.io/docling/usage/enrichments/").
+- If you have the necessary hardware and wish to implement these capabilities, you can modify the ingestion pipeline. For more details, please refer to the official [Docling Enrichments Documentation](https://docling-project.github.io/docling/usage/enrichments/).
 
 ---
 
