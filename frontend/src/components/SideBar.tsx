@@ -54,10 +54,11 @@ function SideBar() {
     }, [activeConversationId]);
 
     useEffect(() => {
-        if (lastMessage && lastMessage.model) {
+        // Only fetch history when message is complete (not during streaming)
+        if (lastMessage && lastMessage.model && !isStreaming) {
             fetchHistory();
         }
-    }, [lastMessage?.model]);
+    }, [lastMessage?.model, isStreaming]);
 
     const handleNewChat = () => {
         dispatch(setConversationId(null));

@@ -59,13 +59,15 @@ function Chat() {
 
             while (true) {
                 const { done, value } = await reader.read();
-               
+            
                 if (done) {
                     // Stream ended - check if we got completion signal
                     if (!isComplete && accumulatedResponse) {
                         // Stream ended without completion signal, but we have content
                         dispatch(updateLastModelMessage({ model: accumulatedResponse }));
                     }
+                    // Always set streaming to false when done
+                    dispatch(setIsStreaming(false));
                     break;
                 }
 
@@ -76,7 +78,7 @@ function Chat() {
                     if (line.startsWith('data: ') && line.length > 6) {
                         try {
                             const jsonData = JSON.parse(line.slice(6));
-                           
+                        
                             if (jsonData.status === 'streaming' && jsonData.chunk) {
                                 accumulatedResponse += jsonData.chunk;
                                 dispatch(updateLastModelMessage({ model: accumulatedResponse }));
@@ -87,10 +89,13 @@ function Chat() {
                                 } else {
                                     dispatch(updateLastModelMessage({ model: accumulatedResponse }));
                                 }
+                                // Set streaming to false when complete
+                                dispatch(setIsStreaming(false));
                                 return;
                             } else if (jsonData.status === 'error') {
                                 dispatch(updateLastModelMessage({ model: `Error: ${jsonData.error}` }));
                                 dispatch(showError("Failed to get a response from the model. Please try again."));
+                                dispatch(setIsStreaming(false));
                                 return;
                             }
                         } catch (parseError) {
