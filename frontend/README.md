@@ -1,95 +1,120 @@
-# RAG WebApp – Frontend (React + TypeScript + Vite)
+# RAG WebApp – Frontend 🎨
 
-A responsive, modern UI for chatting with your Retrieval-Augmented Generation backend. Built with React, TypeScript, Redux Toolkit, and Vite.
+A responsive, modern UI for chatting with your Retrieval-Augmented Generation backend.  
+Built with **React, TypeScript, Redux Toolkit, and Vite**.
 
-## Features
+---
 
-- Chat UI with user/model bubbles and conversation history
-- Collection management: upload files to create vector collections
-- Model and collection selection (locked during active conversation)
-- Route hydration: direct link to `/conversation/{id}` loads history automatically
-- Prompt Template Editor: select default or custom prompts; drag placeholders; save/apply templates
+## ✨ Features
 
-## Tech Stack
+- 💬 **Dynamic Chat UI**: Clean user/model message bubbles and persistent conversation history.  
+- 📚 **Collection Management**: Easily upload files to create and manage vector collections on the backend.  
+- ⚙️ **Model & Collection Selection**: Choose your desired model and data source before starting a chat (selections lock during a conversation to ensure consistency).  
+- 🔗 **Direct Conversation Linking**: Navigate directly to a conversation with its URL (`/conversation/{id}`) to automatically load its history.  
+- 📝 **Prompt Template Editor**: Switch between a default RAG prompt and your own custom, saved templates.  
 
-- React + TypeScript + Vite
-- Redux Toolkit (global state)
-- Tailwind CSS (utility styles)
+---
 
-## Getting Started
+## 🛠️ Tech Stack
 
-1) Install dependencies:
+- **Framework**: React + TypeScript + Vite  
+- **State Management**: Redux Toolkit  
+- **Styling**: Tailwind CSS  
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Node.js v18+**  
+- A running instance of the **backend service** at `http://localhost:3000`  
+
+### Installation & Launch
+
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-2) Start the dev server:
+Start the development server:
 
 ```bash
 npm run dev
 ```
 
-- App runs at `http://localhost:5173`
-- Expects backend running at `http://localhost:3000`
+The application will be available at **http://localhost:5173**.
 
-## Environment / Configuration
+---
 
-- CORS in backend allows `http://localhost:5173`
-- API endpoints used by the frontend:
-  - `GET /api/get_ollama_models`
-  - `GET /api/get_collections`
-  - `POST /api/create_collection/{collectionName}` (multipart files)
-  - `POST /conversation/get_response`
-  - `GET /conversation/get_conversation/{id}`
-  - `GET /conversation/get_history`
-  - `DELETE /conversation/delete_conversation/{id}`
-  - `GET /conversation/get_all_prompt_templates`
-  - `POST /conversation/new_prompt_template`
-  - `POST /conversation/use_default_prompt`
-  - `GET /conversation/get_active_prompt_mode`
+## ▶️ Usage
 
-## Key UI Flows
+### Starting a New Chat
 
-- Start a new chat
-  1. Select Model and Collection on Home
-  2. Enter prompt and Send → navigates to `/conversation/{id}`
-  3. First model response persists history; sidebar updates automatically
+1. On the home page, select an **Ollama Model** and a **Collection** from the dropdown menus.  
+2. Enter your first prompt in the input field and click **Send**.  
+3. You’ll be redirected to a new conversation page (`/conversation/{id}`), and the sidebar will update with your new chat.  
 
-- Continue a chat
-  1. Type a new prompt and Send
-  2. Chat bubbles update in place
+### Managing Collections
 
-- Manage collections
-  1. Click Upload button in footer
-  2. Pick files, name a collection, submit
-  3. On success, new collection is auto-selected
+1. Click the **Upload** button in the footer.  
+2. In the modal, select your files, provide a name for the new collection, and click submit.  
+3. Upon success, the new collection will be available in the dropdown menu.  
 
-- Prompt templates
-  1. Open Prompt Settings in sidebar
-  2. Choose “Default prompt” or a custom template (checkboxes)
-  3. Save new templates with placeholders `{context}` and `{question}`
+---
 
-## Project Structure
+## 📁 Project Structure
 
-- `src/components` – UI components (Chat, Footer, SideBar, PromptTemplateModal, UploadModal)
-- `src/features` – Redux slices (`chatSlice`, `footerSlice`)
-- `src/pages` – Routes (`Home`, `Conversation`)
-- `src/app/store.ts` – Redux store setup
+```
+src/
+├── app/
+│   └── store.ts          # Redux store configuration
+├── components/           # Reusable UI components (Chat, Footer, Modals, etc.)
+├── features/             # Redux Toolkit slices (chatSlice, footerSlice, etc.)
+└── pages/                # Main application routes (Home, Conversation)
+```
 
-## Notes
+---
 
-- Model/Collection dropdowns are disabled during an active conversation to prevent conflicts.
-- Direct navigation to `/conversation/{id}` hydrates chat state and footer selections.
+## 📜 Available Scripts
 
-## Scripts
+- `npm run dev`: Starts the Vite development server.  
+- `npm run build`: Bundles the application for production.  
+- `npm run preview`: Serves the production build locally for preview.  
 
-- `npm run dev` – start dev server
-- `npm run build` – production build
-- `npm run preview` – preview production build
+---
 
-## Troubleshooting
+## 🔌 API & Configuration
 
-- Blank chat on direct route: ensure backend is running and the conversation id exists
-- Missing models/collections: verify backend endpoints return data
-- File upload fails: ensure backend has write permissions to `collections` directory
+This frontend expects the backend to be running at **http://localhost:3000** and have CORS configured to allow requests from **http://localhost:5173**.
+
+### Backend Endpoints Used
+
+- `GET /api/get_ollama_models`  
+- `GET /api/get_collections`  
+- `POST /api/create_collection/{collectionName}`  
+- `POST /conversation/get_response`  
+- `GET /conversation/get_conversation/{id}`  
+- `GET /conversation/get_history`  
+- `DELETE /conversation/delete_conversation/{id}`  
+- `GET /conversation/get_all_prompt_templates`  
+- `POST /conversation/new_prompt_template`  
+- `POST /conversation/use_default_prompt`  
+- `GET /conversation/get_active_prompt_mode`  
+
+---
+
+## 🤔 Troubleshooting
+
+- **Blank chat on direct navigation to a conversation URL?**  
+  - Ensure the backend service is running.  
+  - Verify that the conversation ID in the URL is valid.  
+
+- **Models or Collections lists are empty?**  
+  - Check that the backend is connected to Ollama and can access the collections directory.  
+
+- **File upload fails?**  
+  - Confirm the backend has the necessary write permissions for the `./collections` directory.  
+
+---
