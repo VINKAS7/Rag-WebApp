@@ -52,6 +52,7 @@ File & URL ingestion → Chunking & Embedding → ChromaDB storage → Hybrid RA
 
 ```bash
 # Using uv (recommended for speed)
+pip install uv
 uv pip install -r requirements.txt
 ```
 
@@ -61,7 +62,7 @@ uv pip install -r requirements.txt
 
 ```bash
 cd backend
-uvicorn main:app --reload --host 127.0.0.1 --port 3000
+python main.py
 ```
 
 CORS is configured for `*` (all origins) by default.

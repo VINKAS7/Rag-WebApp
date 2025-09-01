@@ -85,10 +85,12 @@ User → Frontend (React) → Backend (FastAPI)
 cd backend
 
 # Install dependencies
-pip install -r requirements.txt
+# Using uv (recommended for speed)
+pip install uv
+uv pip install -r requirements.txt
 
 # Start FastAPI server
-uvicorn main:app --reload --host 127.0.0.1 --port 3000
+python main.py
 ```
 
 Backend runs at → [http://localhost:3000](http://localhost:3000)
